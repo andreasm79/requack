@@ -54,7 +54,7 @@ export function openCodingOaSetup() {
       start.disabled = pool.length === 0;
       start.textContent = pool.length === 0 ? 'No solvable problems in this list' : `Let the duck pick ${Math.min(ui.count, pool.length)} and start (${MINUTES[ui.count]} min)`;
       fill(info, pool.length === 0
-        ? h('p', { class: 'callout fail' }, `None of the problems in ${listName(store.get(), ui.list)} can run in Requack yet. Pick "Solvable in Requack", NeetCode 150, or a list you imported that includes NeetCode problems.`)
+        ? h('p', { class: 'callout fail' }, `None of the problems in ${listName(store.get(), ui.list)} can run in reQuack yet. Pick "Solvable in reQuack", NeetCode 150, or a list you imported that includes NeetCode problems.`)
         : h('p', { class: 'muted small' }, `${plural(pool.length, 'problem')} in this list can run here. The duck picks at random, favouring ones you haven't done, easiest first.`));
     }
 

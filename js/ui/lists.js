@@ -39,7 +39,7 @@ export function openImport() {
       toast(`${list.name}: ${plural(list.items.length, 'problem')}. It is now your active list.`);
     });
     fill(body,
-      h('p', { class: 'muted' }, 'Got a company list from a friend, a Discord pin or your own spreadsheet? Paste it here. Problems Requack knows are matched, including the ones you can solve in the editor, and the rest are added as yours with their links.'),
+      h('p', { class: 'muted' }, 'Got a company list from a friend, a Discord pin or your own spreadsheet? Paste it here. Problems reQuack knows are matched, including the ones you can solve in the editor, and the rest are added as yours with their links.'),
       h('div', { class: 'field' }, h('label', { for: 'import-name' }, 'List name'), name),
       h('div', { class: 'field' }, h('label', { for: 'import-text' }, 'Problems'), area),
       preview,

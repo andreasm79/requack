@@ -11,7 +11,7 @@ test('ics is a daily floating-time event with CRLF lines', () => {
   assert.ok(ics.includes('DTEND:20261124T000500'));
   assert.ok(ics.includes('RRULE:FREQ=DAILY'));
   assert.ok(ics.includes('DTSTAMP:20261122T120000Z'));
-  assert.ok(ics.includes('DESCRIPTION:Open Requack and run your due recalls.\\nhttps://andreasm79.github.io/requack/'));
+  assert.ok(ics.includes('DESCRIPTION:Open reQuack and run your due recalls.\\nhttps://andreasm79.github.io/requack/'));
   assert.equal(ics.split('BEGIN:').length - 1, 3);
 });
 

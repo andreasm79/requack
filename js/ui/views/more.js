@@ -125,7 +125,7 @@ function backupCard() {
       store.replace({ ...parsed, settings: { ...parsed.settings, introSeen: true } });
       toast('Backup restored.');
     } catch (error) {
-      message.textContent = 'That is not a Requack backup. Paste the full text you exported.';
+      message.textContent = 'That is not a reQuack backup. Paste the full text you exported.';
     }
   };
   const fromFile = (event) => {
@@ -178,7 +178,7 @@ function aboutCard() {
   return h('section', { class: 'card' },
     h('h2', null, 'how the schedule works'),
     h('p', { class: 'small' }, 'First attempt: back tomorrow on a FAIL, in 2 days on FLAKY, 4 on PASS, 7 on O(1). After that each good recall multiplies the gap (about 2.5×), a shaky one grows it slowly, and blanking sends the problem back to tomorrow and makes it grow slower from then on. A problem counts as mastered once the gap passes three weeks.'),
-    h('p', { class: 'small muted' }, 'Problem titles and links point to LeetCode. The NeetCode 150 and Blind 75 are community problem lists. Requack is not affiliated with either. The bug hunts are original.'),
+    h('p', { class: 'small muted' }, 'Problem titles and links point to LeetCode. The NeetCode 150 and Blind 75 are community problem lists. reQuack is not affiliated with either. The bug hunts are original.'),
     h('p', { class: 'small muted mono' }, 'Built for the DUCSS Project of the Month, November 2026.')
   );
 }

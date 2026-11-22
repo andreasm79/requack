@@ -110,7 +110,7 @@ export async function initAccount(button) {
     store.subscribe(schedulePush);
   } catch (error) {
     button.hidden = true;
-    console.warn('Requack sign-in is unavailable', error);
+    console.warn('reQuack sign-in is unavailable', error);
   }
 }
 
@@ -184,7 +184,7 @@ function signedOutForm(body) {
     h('div', { class: 'field' }, h('label', { for: 'acct-password' }, 'Password'), password),
     submit);
   fill(body,
-    h('p', { class: 'muted' }, 'Optional. Requack works without an account. Signing in keeps your progress, lists and code in sync between your laptop and your phone.'),
+    h('p', { class: 'muted' }, 'Optional. reQuack works without an account. Signing in keeps your progress, lists and code in sync between your laptop and your phone.'),
     modes,
     form,
     message,

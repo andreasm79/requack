@@ -1,8 +1,8 @@
-# Requack
+# reQuack
 
 **Spaced repetition for interview prep, with a rubber duck.**
 
-You solved Two Sum in September. Could you solve it today? Requack schedules when to re-test everything you practise, makes you explain it to a duck before you see your notes, and trains you to review code the way OAs now ask: whole codebases with one bug in them.
+You solved Two Sum in September. Could you solve it today? reQuack schedules when to re-test everything you practise, makes you explain it to a duck before you see your notes, and trains you to review code the way OAs now ask: whole codebases with one bug in them.
 
 **Live:** https://andreasm79.github.io/requack/
 
@@ -88,4 +88,4 @@ tests/                  node:test suites for the core and the hunt data
 
 SM-2 style. First attempt: 1, 2, 4 or 7 days depending on how it went. After that a good recall multiplies the interval by the card's ease (starts at 2.5), a shaky one grows it by 20%, an instant one by ease × 1.3, and a fail resets it to 1 day and lowers the ease. Intervals cap at 180 days. An item is mastered once its interval reaches 21 days.
 
-Requack is not affiliated with LeetCode, NeetCode, HackerRank or CodeSignal. Built for the DUCSS Project of the Month, November 2026.
+reQuack is not affiliated with LeetCode, NeetCode, HackerRank or CodeSignal. Built for the DUCSS Project of the Month, November 2026.

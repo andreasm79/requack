@@ -193,7 +193,7 @@ function createStore() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (error) {
-      console.warn('Requack could not save to this browser', error);
+      console.warn('reQuack could not save to this browser', error);
     }
     for (const listener of listeners) listener(state);
   }
@@ -224,7 +224,7 @@ function createStore() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (error) {
-        console.warn('Requack could not save your code', error);
+        console.warn('reQuack could not save your code', error);
       }
     },
     undoLast() {

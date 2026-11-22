@@ -45,7 +45,7 @@ export function initTheme(button) {
     try {
       localStorage.setItem(KEY, mode);
     } catch (error) {
-      console.warn('Requack could not save the theme', error);
+      console.warn('reQuack could not save the theme', error);
     }
     apply(mode);
     paint();

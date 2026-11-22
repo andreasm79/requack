@@ -1,6 +1,6 @@
 {
-  "name": "Requack",
-  "short_name": "Requack",
+  "name": "reQuack",
+  "short_name": "reQuack",
   "description": "Spaced repetition for interview prep, with a rubber duck.",
   "start_url": "./index.html",
   "display": "standalone",

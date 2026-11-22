@@ -1,6 +1,6 @@
 import { addDays } from './dates.js';
 
-const TITLE = 'Requack: 15 minutes of recalls';
+const TITLE = 'reQuack: 15 minutes of recalls';
 const LENGTH_MINUTES = 15;
 
 function pad(n) {
@@ -34,11 +34,11 @@ export function parseTime(value) {
 }
 
 export function buildIcs({ dateKey, hour, minute, url, now = new Date() }) {
-  const description = escapeText(`Open Requack and run your due recalls.\n${url}`);
+  const description = escapeText(`Open reQuack and run your due recalls.\n${url}`);
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Requack//Daily reminder//EN',
+    'PRODID:-//reQuack//Daily reminder//EN',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     `UID:requack-daily-${utcStamp(now)}@requack`,
@@ -64,7 +64,7 @@ export function googleCalendarUrl({ dateKey, hour, minute, url, timeZone }) {
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: TITLE,
-    details: `Open Requack and run your due recalls.\n${url}`,
+    details: `Open reQuack and run your due recalls.\n${url}`,
     dates: `${stamp(dateKey, hour, minute)}/${endStamp(dateKey, hour, minute)}`,
     recur: 'RRULE:FREQ=DAILY',
   });

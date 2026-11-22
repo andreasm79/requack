@@ -25,7 +25,7 @@ function intro(today) {
     h('h3', null, 'Solve it once. Remember it at the interview.'),
     h('ol', { class: 'steps' },
       h('li', null, 'Solve a problem, then log how it went and the trick in one line.'),
-      h('li', null, 'Requack schedules the recall: tomorrow if you struggled, weeks out if it was easy.'),
+      h('li', null, 'reQuack schedules the recall: tomorrow if you struggled, weeks out if it was easy.'),
       h('li', null, 'On recall day, explain it to the duck before you see your notes.'),
       h('li', null, 'Between problems, hunt bugs in code an AI wrote.')
     ),
