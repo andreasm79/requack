@@ -1,8 +1,8 @@
 import { fill, h, toast } from '../dom.js';
 import { openBulk } from '../bulk.js';
+import { listPicker, manageListsCard, openImport } from '../lists.js';
 import { store } from '../../core/store.js';
 import { buildDemoState } from '../../core/demo.js';
-import { LISTS } from '../../data/problems.js';
 import { addDays, todayKey } from '../../core/dates.js';
 import { buildIcs, googleCalendarUrl, parseTime } from '../../core/reminder.js';
 
@@ -82,10 +82,9 @@ function settingsCard(state) {
   return h('section', { class: 'card' },
     h('h2', null, 'plan'),
     h('div', { class: 'field' },
-      h('label', { for: 'set-list' }, 'LeetCode list'),
-      h('select', { id: 'set-list', onchange: (event) => store.updateSettings({ list: event.target.value }) },
-        Object.entries(LISTS).map(([value, list]) => h('option', { value, selected: settings.list === value }, list.label))
-      )
+      h('label', { for: 'list-picker' }, 'Working on'),
+      listPicker(state),
+      h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: openImport }, 'Import a list'))
     ),
     h('div', { class: 'field' },
       h('label', { for: 'set-new' }, 'New problems a day'),
@@ -186,5 +185,5 @@ function aboutCard() {
 
 export function renderMore(today) {
   const state = store.get();
-  return [h('h1', null, 'More'), settingsCard(state), reminderCard(), backupCard(), shortcutsCard(), dangerCard(state, today), aboutCard()];
+  return [h('h1', null, 'More'), settingsCard(state), manageListsCard(state), reminderCard(), backupCard(), shortcutsCard(), dangerCard(state, today), aboutCard()];
 }

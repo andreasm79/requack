@@ -9,9 +9,18 @@ export function allProblems(state) {
   return [...PROBLEMS, ...HUNTS, ...state.custom];
 }
 
+export function listProblems(state, listId) {
+  if (LISTS[listId]) return PROBLEMS.filter(LISTS[listId].filter);
+  const list = state.lists.find((item) => item.id === listId);
+  if (!list) return PROBLEMS;
+  const index = problemIndex(state);
+  return list.items.map((id) => index.get(id)).filter(Boolean);
+}
+
 export function activeProblems(state) {
-  const list = LISTS[state.settings.list] || LISTS.neetcode150;
-  return [...PROBLEMS.filter(list.filter), ...HUNTS, ...state.custom];
+  const fromList = listProblems(state, state.settings.list);
+  const ids = new Set(fromList.map((problem) => problem.id));
+  return [...fromList, ...HUNTS.filter((hunt) => !ids.has(hunt.id)), ...state.custom.filter((problem) => !ids.has(problem.id))];
 }
 
 export function problemIndex(state) {

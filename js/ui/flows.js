@@ -3,6 +3,7 @@ import { duck } from './duck.js';
 import { gradeButtons, GRADE_LABELS, VERDICTS } from './grade.js';
 import { oaLimitFor, openHunt } from './hunt.js';
 import { isRunnable, openSolve } from './solve.js';
+import { listMembership } from './lists.js';
 import { openSheet, closeSheet } from './sheet.js';
 import { startSession } from './session.js';
 import { store } from '../core/store.js';
@@ -231,6 +232,7 @@ export function openDetail(problem) {
         isHunt ? null : h('p', { class: 'muted' }, 'Not attempted yet. Try it, then log how it went.'),
         isRunnable(problem.id) ? h('button', { class: 'btn primary wide', type: 'button', onclick: () => openSolve(problem.id) }, '▶ Solve it here, with tests') : null,
         h('button', { class: `btn ${isRunnable(problem.id) ? '' : 'primary '}wide`, type: 'button', onclick: () => openPractice(problem) }, isHunt ? 'Start the hunt' : 'I solved it elsewhere, log it'),
+        listMembership(problem),
         confirmBox
       );
       return;
@@ -251,6 +253,7 @@ export function openDetail(problem) {
         noteArea,
         h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: () => { store.setNote(problem.id, noteArea.value.trim()); toast('Notes saved.'); } }, 'Save notes'))
       ),
+      listMembership(problem),
       h('div', { class: 'field' },
         h('span', { class: 'label' }, 'History'),
         h('ul', { class: 'history' }, [...card.history].reverse().map((entry) =>

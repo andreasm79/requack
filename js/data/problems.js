@@ -124,7 +124,10 @@ export const PROBLEMS = RAW.flatMap(([pattern, items]) =>
   })
 );
 
+import { RUNNABLE_IDS } from './runnable-index.js';
+
 export const LISTS = {
   neetcode150: { label: 'NeetCode 150', filter: () => true },
   blind75: { label: 'Blind 75', filter: (problem) => problem.blind75 },
+  runnable: { label: 'Solvable in Requack', filter: (problem) => RUNNABLE_IDS.includes(problem.id) },
 };

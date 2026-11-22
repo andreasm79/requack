@@ -1,6 +1,7 @@
 import { fill, h } from '../dom.js';
 import { openCustom, openDetail } from '../flows.js';
 import { openBulk } from '../bulk.js';
+import { listPicker, openImport, openNewList } from '../lists.js';
 import { problemRow } from './rows.js';
 import { store } from '../../core/store.js';
 import { activeProblems } from '../../core/stats.js';
@@ -75,10 +76,15 @@ export function renderProblems(today) {
         h('button', { class: 'btn', type: 'button', onclick: openBulk }, 'Mark solved'),
         h('button', { class: 'btn primary', type: 'button', onclick: () => openCustom() }, '+ Add anything'))
     ),
-    h('p', { class: 'lede' }, 'LeetCode lists and bug hunts are built in. Add your own: system design, behavioural, a concept from a lecture, an OA question.'),
+    h('div', { class: 'list-bar' },
+      h('div', { class: 'field' }, h('label', { for: 'list-picker' }, 'Working on'), listPicker(store.get())),
+      h('div', { class: 'actions' },
+        h('button', { class: 'btn', type: 'button', onclick: openImport }, 'Import a list'),
+        h('button', { class: 'btn', type: 'button', onclick: openNewList }, 'New list'))),
+    h('p', { class: 'lede' }, 'NeetCode 150, Blind 75 and bug hunts are built in. Import any list you found, or add your own problems: system design, behavioural, an OA question.'),
     h('div', { class: 'filters' },
       h('input', {
-        id: 'problem-search', type: 'search', placeholder: 'grep titles and your notes…', value: ui.query, 'aria-label': 'Search problems',
+        id: 'problem-search', type: 'search', placeholder: 'grep titles, tags and your notes…', value: ui.query, 'aria-label': 'Search problems',
         oninput: (event) => { ui.query = event.target.value; rerender(); },
       }),
       h('div', { class: 'field-row' },

@@ -18,6 +18,7 @@ export function defaultState() {
     version: 1,
     cards: {},
     custom: [],
+    lists: [],
     code: {},
     settings: { list: 'neetcode150', newPerDay: 2, interviewDate: null, demo: false, introSeen: false },
   };
@@ -153,7 +154,19 @@ export function sanitize(raw) {
     }
   }
   const settings = raw.settings || {};
-  if (LISTS[settings.list]) state.settings.list = settings.list;
+  if (Array.isArray(raw.lists)) {
+    const ids = new Set();
+    for (const list of raw.lists.slice(0, 50)) {
+      if (!list || typeof list !== 'object') continue;
+      const id = text(list.id, 60);
+      const name = text(list.name, 60).trim();
+      if (!id.startsWith('list-') || !name || ids.has(id)) continue;
+      ids.add(id);
+      const items = Array.isArray(list.items) ? [...new Set(list.items.filter((item) => typeof item === 'string').map((item) => item.slice(0, 140)))].slice(0, 1000) : [];
+      state.lists.push({ id, name, items });
+    }
+  }
+  if (LISTS[settings.list] || state.lists.some((list) => list.id === settings.list)) state.settings.list = settings.list;
   if (Number.isFinite(settings.newPerDay)) state.settings.newPerDay = Math.min(10, Math.max(0, Math.round(settings.newPerDay)));
   if (isKey(settings.interviewDate)) state.settings.interviewDate = settings.interviewDate;
   state.settings.demo = settings.demo === true;
@@ -265,10 +278,41 @@ function createStore() {
       const custom = state.custom.map((problem) => (problem.id === id ? cleanCustom({ ...problem, ...patch, id }) || problem : problem));
       commit({ ...state, custom });
     },
+    createList(name, items = [], { activate = true } = {}) {
+      const list = { id: `list-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, name: text(name, 60).trim() || 'My list', items: [...new Set(items)] };
+      commit(sanitize({ ...state, lists: [...state.lists, list], settings: { ...state.settings, list: activate ? list.id : state.settings.list } }));
+      return list;
+    },
+    importList(name, matched, unmatched) {
+      const created = [];
+      for (const item of unmatched) {
+        const problem = cleanCustom({ kind: 'coding', title: item.title, url: item.url, difficulty: item.difficulty, id: `custom-${slugify(item.title)}-${Date.now().toString(36)}${created.length}` });
+        if (problem) created.push(problem);
+      }
+      const list = { id: `list-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`, name: text(name, 60).trim() || 'Imported list', items: [...matched, ...created.map((problem) => problem.id)] };
+      commit(sanitize({ ...state, custom: [...state.custom, ...created], lists: [...state.lists, list], settings: { ...state.settings, list: list.id } }));
+      return list;
+    },
+    renameList(id, name) {
+      commit(sanitize({ ...state, lists: state.lists.map((list) => (list.id === id ? { ...list, name } : list)) }));
+    },
+    deleteList(id) {
+      const settings = state.settings.list === id ? { ...state.settings, list: 'neetcode150' } : state.settings;
+      commit(sanitize({ ...state, lists: state.lists.filter((list) => list.id !== id), settings }));
+    },
+    toggleInList(listId, problemId) {
+      const lists = state.lists.map((list) => {
+        if (list.id !== listId) return list;
+        const items = list.items.includes(problemId) ? list.items.filter((item) => item !== problemId) : [...list.items, problemId];
+        return { ...list, items };
+      });
+      commit(sanitize({ ...state, lists }));
+    },
     removeCustom(id) {
       const cards = { ...state.cards };
       delete cards[id];
-      commit({ ...state, cards, custom: state.custom.filter((problem) => problem.id !== id) });
+      const lists = state.lists.map((list) => ({ ...list, items: list.items.filter((item) => item !== id) }));
+      commit({ ...state, cards, lists, custom: state.custom.filter((problem) => problem.id !== id) });
     },
     updateSettings(patch) {
       commit(sanitize({ ...state, settings: { ...state.settings, ...patch } }));

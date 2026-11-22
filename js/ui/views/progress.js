@@ -4,7 +4,7 @@ import { statsText } from '../../core/share.js';
 import { store } from '../../core/store.js';
 import { activity, forecast, huntTotals, patternStats, projection, streak, totals, weakestPattern } from '../../core/stats.js';
 import { addDays, formatShort, fromKey } from '../../core/dates.js';
-import { LISTS } from '../../data/problems.js';
+import { listName } from '../../core/lists.js';
 
 const HEAT_WEEKS = 20;
 
@@ -96,7 +96,7 @@ export function renderProgress(today) {
   const days = activity(state.cards);
   const rows = patternStats(state, today);
   const weakest = weakestPattern(rows);
-  const listLabel = LISTS[state.settings.list].label;
+  const listLabel = listName(state, state.settings.list);
   const hunts = huntTotals(state);
 
   return [

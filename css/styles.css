@@ -529,3 +529,16 @@ button.code-line:hover { background: var(--hover); }
 .view-switch { display: flex; gap: 6px; }
 .tree-file .edited { color: var(--copper); margin-left: 4px; }
 .runnable-tag { color: var(--pass); }
+.list-bar { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); align-items: end; }
+@media (min-width: 640px) { .list-bar { grid-template-columns: minmax(0, 1fr) auto; } }
+.import-preview { display: flex; flex-direction: column; gap: 6px; }
+.list-row input { min-height: 38px; }
+.oa-grid { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 600px) { .oa-grid { grid-template-columns: 1fr 1fr; } }
+.oa-tile { display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--duck-dark); background: var(--panel); box-shadow: 4px 4px 0 var(--glow); cursor: pointer; }
+.oa-tile:hover { background: var(--panel-2); }
+.oa-tile-title { font-family: var(--mono); font-weight: 800; color: var(--amber); }
+.oa-tile-text { color: var(--muted); font-size: 0.9rem; }
+.oa-score { display: flex; flex-direction: column; gap: 2px; }
+.oa-percent { font-family: var(--mono); font-weight: 800; font-size: 2.6rem; letter-spacing: -0.04em; color: var(--amber); }
+.oa-info { display: flex; flex-direction: column; gap: 6px; }
