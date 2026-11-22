@@ -161,7 +161,7 @@ export function renderToday(today) {
       )
     ),
     h('section', { class: 'section' },
-      h('div', { class: 'section-head' }, h('h2', null, 'practice like the real thing'), h('span', { class: 'count' }, 'timed · fullscreen · proctored')),
+      h('div', { class: 'section-head' }, h('h2', null, 'practice like the real thing'), h('span', { class: 'count' }, 'proctored')),
       h('div', { class: 'oa-grid' },
         h('button', { class: 'oa-tile', type: 'button', onclick: openCodingOaSetup },
           h('span', { class: 'oa-tile-title' }, '▶ Coding OA'),

@@ -18,7 +18,11 @@ export function createIde(problem, { onFixed = () => {} } = {}) {
   const saved = (store.get().code[problem.id] || {}).files || {};
   const edits = Object.fromEntries(Object.entries(saved).filter(([path]) => originals[path] !== undefined));
   const visibleTests = testFilesOf(problem);
-  const ui = { path: visibleTests.length ? problem.files.find((file) => !visibleTests.includes(file.name)).name : problem.files[0].name, busy: false, lines: [] };
+  const ENTRY = /(^|\/)(main\.py|app\.py|api\.py|server\.js|index\.js|login\.js|daily_job\.py)$/;
+  const sources = problem.files.filter((file) => !visibleTests.includes(file.name) && file.bugs.length === 0
+    && ['python', 'javascript'].includes(langFor(file.name, problem.lang)) && !/(^|\/)__init__\.py$/.test(file.name));
+  const firstSource = sources.find((file) => ENTRY.test(file.name)) || sources[0];
+  const ui = { path: (firstSource || problem.files[0]).name, busy: false, lines: [] };
   const content = (path) => (edits[path] !== undefined ? edits[path] : originals[path]);
 
   let saveTimer = null;
