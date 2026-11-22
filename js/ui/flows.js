@@ -1,14 +1,18 @@
 import { fill, h, toast } from './dom.js';
 import { duck } from './duck.js';
 import { gradeButtons, GRADE_LABELS, VERDICTS } from './grade.js';
-import { openHunt } from './hunt.js';
+import { oaLimitFor, openHunt } from './hunt.js';
 import { openSheet, closeSheet } from './sheet.js';
 import { startSession } from './session.js';
 import { store } from '../core/store.js';
-import { allProblems, dueCards, problemIndex, weakestCards } from '../core/stats.js';
+import { allHunts, allProblems, dueCards, problemIndex, weakestCards } from '../core/stats.js';
 import { intervalLabel, status } from '../core/scheduler.js';
 import { formatShort, relative, todayKey } from '../core/dates.js';
 import { DIFFICULTIES, KINDS, LANGUAGES } from '../data/kinds.js';
+
+function oaFlags(oa) {
+  return Object.values(oa.flags).reduce((sum, value) => sum + value, 0);
+}
 
 function link(problem) {
   if (!problem.url) return null;
@@ -91,6 +95,33 @@ export function startDueSession() {
     return;
   }
   startSession(queue, openPractice);
+}
+
+function shuffle(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+export function mockOaSet(state) {
+  const hunts = allHunts(state);
+  const fresh = (list) => [...shuffle(list.filter((hunt) => !state.cards[hunt.id])), ...shuffle(list.filter((hunt) => state.cards[hunt.id]))];
+  const repos = fresh(hunts.filter((hunt) => hunt.files.length >= 4));
+  const small = fresh(hunts.filter((hunt) => hunt.files.length < 4));
+  return [...small.slice(0, 2), ...repos.slice(0, 1)];
+}
+
+export function startMockOa() {
+  const queue = mockOaSet(store.get());
+  if (queue.length === 0) return;
+  startSession(queue, (hunt) => openHunt(hunt, { oa: { limit: oaLimitFor(hunt) } }));
+}
+
+export function openOa(hunt) {
+  openHunt(hunt, { oa: { limit: oaLimitFor(hunt) } });
 }
 
 export function startTopicDrill(pattern) {
@@ -221,7 +252,8 @@ export function openDetail(problem) {
         h('ul', { class: 'history' }, [...card.history].reverse().map((entry) =>
           h('li', null,
             h('span', null, formatShort(entry.date)),
-            h('span', { class: `rating-${entry.rating}` }, VERDICTS[entry.rating] + (entry.minutes ? `  ${entry.minutes} min` : ''))
+            h('span', { class: `rating-${entry.rating}` },
+              VERDICTS[entry.rating] + (entry.minutes ? `  ${entry.minutes} min` : '') + (entry.oa ? `  OA ${oaFlags(entry.oa) === 0 ? 'clean' : `${oaFlags(entry.oa)} flags`}` : ''))
           )
         ))
       ),

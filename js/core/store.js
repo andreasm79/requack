@@ -4,8 +4,9 @@ import { LISTS, slugify } from '../data/problems.js';
 import { DIFFICULTIES, HUNT_PATTERN, KINDS, LANGUAGES } from '../data/kinds.js';
 
 const STORAGE_KEY = 'requack.v1';
-const MAX_FILES = 3;
-const MAX_LINES = 120;
+const MAX_FILES = 14;
+const MAX_LINES = 160;
+const OA_FLAGS = ['tab', 'fullscreen', 'paste', 'copy'];
 const SEED_SPREAD_DAYS = 14;
 const SEED_INTERVAL = 3;
 
@@ -22,6 +23,17 @@ function text(value, max) {
   return typeof value === 'string' ? value.slice(0, max) : '';
 }
 
+function count(value) {
+  return Number.isFinite(value) && value > 0 ? Math.min(999, Math.round(value)) : 0;
+}
+
+export function cleanOa(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const flags = {};
+  for (const flag of OA_FLAGS) flags[flag] = count(raw.flags && raw.flags[flag]);
+  return { limit: count(raw.limit), used: count(raw.used), timedOut: raw.timedOut === true, flags };
+}
+
 function cleanCard(id, raw) {
   const card = newCard(id);
   if (!raw || typeof raw !== 'object' || !Array.isArray(raw.history)) return null;
@@ -34,6 +46,8 @@ function cleanCard(id, raw) {
         minutes: Number.isFinite(entry.minutes) && entry.minutes > 0 ? Math.round(entry.minutes) : null,
       };
       if (entry.seeded === true) clean.seeded = true;
+      const oa = cleanOa(entry.oa);
+      if (oa) clean.oa = oa;
       return clean;
     });
   if (card.history.length === 0) return null;
@@ -56,7 +70,7 @@ function cleanFiles(raw) {
     for (const index of Array.isArray(file.bugs) ? file.bugs : []) {
       if (Number.isInteger(index) && index >= 0 && index < lines.length) bugs.add(index);
     }
-    files.push({ name: text(file.name, 60) || 'snippet', lines, bugs: [...bugs].sort((a, b) => a - b) });
+    files.push({ name: text(file.name, 90) || 'snippet', lines, bugs: [...bugs].sort((a, b) => a - b) });
   }
   return files.some((file) => file.bugs.length > 0) ? files : null;
 }
@@ -88,6 +102,9 @@ function cleanCustom(raw) {
     problem.scenario = text(raw.scenario, 500);
     problem.explanation = text(raw.explanation, 900);
     problem.fix = text(raw.fix, 2000);
+    if (raw.source && typeof raw.source === 'object' && /^https?:\/\//.test(raw.source.url || '')) {
+      problem.source = { label: text(raw.source.label, 140) || raw.source.url, url: text(raw.source.url, 300) };
+    }
   }
   return problem;
 }
@@ -150,11 +167,13 @@ function createStore() {
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    logReview(id, rating, { minutes = null, note = null } = {}) {
+    logReview(id, rating, { minutes = null, note = null, oa = null } = {}) {
       const today = todayKey();
       const current = state.cards[id] || newCard(id);
       const updated = review(current, rating, today, state.settings.interviewDate, minutes);
       if (note !== null) updated.note = text(note, 2000);
+      const integrity = cleanOa(oa);
+      if (integrity) updated.history[updated.history.length - 1].oa = integrity;
       lastChange = { id, previous: state.cards[id] || null };
       commit({ ...state, cards: { ...state.cards, [id]: updated } });
       return updated;

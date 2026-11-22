@@ -24,13 +24,13 @@ export function sheetOpen() {
   return active !== null;
 }
 
-export function openSheet(title, build, { wide = false } = {}) {
+export function openSheet(title, build, { wide = false, xwide = false } = {}) {
   const previousOpener = active ? opener : document.activeElement;
   closeSheet(false);
   opener = previousOpener;
   const badge = sessionLabel();
   const body = h('div', { class: 'sheet-body' });
-  const sheet = h('div', { class: wide ? 'sheet wide' : 'sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': title, tabIndex: -1 },
+  const sheet = h('div', { class: `sheet${wide ? ' wide' : ''}${xwide ? ' xwide' : ''}`, role: 'dialog', 'aria-modal': 'true', 'aria-label': title, tabIndex: -1 },
     h('div', { class: 'sheet-head' },
       h('div', { class: 'sheet-title' },
         badge ? h('span', { class: 'chip attention' }, `session ${badge}`) : null,

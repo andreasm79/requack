@@ -17,20 +17,26 @@ export const GRADE_LABELS = {
 
 const UNDO = { label: 'Undo', run: () => { if (store.undoLast()) toast('Undone. Nothing was saved.'); } };
 
-function sessionSummary(results) {
-  const parts = RATINGS.filter((rating) => results[rating] > 0).map((rating) => `${results[rating]} ${VERDICTS[rating]}`);
+function sessionSummary(step) {
+  const parts = RATINGS.filter((rating) => step.results[rating] > 0).map((rating) => `${step.results[rating]} ${VERDICTS[rating]}`);
+  if (step.oa) return `Mock OA done: ${parts.join(', ')}. Integrity: ${step.flags === 0 ? 'clean' : `${step.flags} flagged`}.`;
   return `Session done: ${parts.join(', ')}.`;
+}
+
+function totalFlags(oa) {
+  if (!oa) return null;
+  return Object.values(oa.flags).reduce((sum, value) => sum + value, 0);
 }
 
 function save(problem, rating, inputs) {
   const updated = store.logReview(problem.id, rating, inputs);
-  const step = advance(rating);
+  const step = advance(rating, totalFlags(inputs.oa));
   if (step && step.next) {
     toast(`${VERDICTS[rating]}. Next recall ${relative(updated.due, todayKey())}.`, UNDO);
     return;
   }
   closeSheet();
-  if (step) toast(sessionSummary(step.results));
+  if (step) toast(sessionSummary(step));
   else toast(`${afterQuip(rating, updated.history.length)} Next recall ${relative(updated.due, todayKey())}.`, UNDO);
 }
 

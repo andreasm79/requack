@@ -8,6 +8,7 @@ export function lineNumber(index) {
 }
 
 export function kindLabel(problem) {
+  if (problem.files && problem.files.length >= 4) return `repo · ${problem.files.length} files · ${LANGUAGES[problem.lang] || problem.lang}`;
   if (problem.files) return `bug hunt · ${LANGUAGES[problem.lang] || problem.lang}`;
   return KINDS[problem.kind].label.toLowerCase();
 }

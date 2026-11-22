@@ -9,7 +9,7 @@ import { onRefresh } from './ui/refresh.js';
 import { openPalette } from './ui/palette.js';
 import { initTheme } from './ui/theme.js';
 import { openBulk } from './ui/bulk.js';
-import { openCustom, openDetail, openPractice, startDueSession } from './ui/flows.js';
+import { openCustom, openDetail, openPractice, startDueSession, startMockOa } from './ui/flows.js';
 import { allHunts, dueCards, huntOfTheDay, problemIndex } from './core/stats.js';
 import { isDue } from './core/scheduler.js';
 import { renderProgress } from './ui/views/progress.js';
@@ -41,6 +41,7 @@ function commands() {
   return [
     { label: 'Run all due recalls', keywords: 'session start review', run: startDueSession },
     { label: 'Bug hunt of the day', keywords: 'hunt find bug', run: () => { const hunt = huntOfTheDay(store.get(), todayKey()); if (hunt) openPractice(hunt); else location.hash = '#bugs'; } },
+    { label: 'Start a mock OA', keywords: 'assessment hackerrank codesignal timed test', run: startMockOa },
     { label: 'Add anything', keywords: 'new custom problem create', run: () => openCustom() },
     { label: 'Mark problems as already solved', keywords: 'bulk import seed', run: openBulk },
     { label: 'Go to Today', keywords: 'home', run: go('today') },
