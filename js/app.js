@@ -7,6 +7,7 @@ import { renderProblems } from './ui/views/problems.js';
 import { renderBugs } from './ui/views/bugs.js';
 import { onRefresh } from './ui/refresh.js';
 import { openPalette } from './ui/palette.js';
+import { initTheme } from './ui/theme.js';
 import { openBulk } from './ui/bulk.js';
 import { openCustom, openDetail, openPractice, startDueSession } from './ui/flows.js';
 import { allHunts, dueCards, huntOfTheDay, problemIndex } from './core/stats.js';
@@ -96,6 +97,7 @@ function render() {
 
 document.getElementById('brand-duck').append(duck('calm', 36));
 document.getElementById('open-palette').addEventListener('click', showPalette);
+initTheme(document.getElementById('theme-toggle'));
 document.addEventListener('keydown', onKey);
 window.addEventListener('hashchange', () => {
   render();
