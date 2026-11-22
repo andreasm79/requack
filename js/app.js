@@ -10,6 +10,7 @@ import { openPalette } from './ui/palette.js';
 import { initTheme } from './ui/theme.js';
 import { openCodingOaSetup } from './ui/oa.js';
 import { openImport } from './ui/lists.js';
+import { initAccount, openAccount, accountsEnabled } from './ui/account.js';
 import { openBulk } from './ui/bulk.js';
 import { openCustom, openDetail, openPractice, startDueSession, startMockOa } from './ui/flows.js';
 import { allHunts, dueCards, huntOfTheDay, problemIndex } from './core/stats.js';
@@ -46,6 +47,7 @@ function commands() {
     { label: 'Start a coding OA', keywords: 'assessment hackerrank codesignal timed test editor run code', run: openCodingOaSetup },
     { label: 'Start a code review OA', keywords: 'assessment bug hunt mock timed', run: startMockOa },
     { label: 'Import a list', keywords: 'company list paste leetcode csv', run: openImport },
+    ...(accountsEnabled() ? [{ label: 'Account and sync', keywords: 'sign in login sign up account sync', run: openAccount }] : []),
     { label: 'Add anything', keywords: 'new custom problem create', run: () => openCustom() },
     { label: 'Mark problems as already solved', keywords: 'bulk import seed', run: openBulk },
     { label: 'Go to Today', keywords: 'home', run: go('today') },
@@ -103,6 +105,7 @@ function render() {
 document.getElementById('brand-duck').append(duck('calm', 36));
 document.getElementById('open-palette').addEventListener('click', showPalette);
 initTheme(document.getElementById('theme-toggle'));
+initAccount(document.getElementById('account-btn'));
 document.addEventListener('keydown', onKey);
 window.addEventListener('hashchange', () => {
   render();

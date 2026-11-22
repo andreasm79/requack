@@ -542,3 +542,14 @@ button.code-line:hover { background: var(--hover); }
 .oa-score { display: flex; flex-direction: column; gap: 2px; }
 .oa-percent { font-family: var(--mono); font-weight: 800; font-size: 2.6rem; letter-spacing: -0.04em; color: var(--amber); }
 .oa-info { display: flex; flex-direction: column; gap: 6px; }
+.account-btn { padding: 4px 10px; gap: 6px; }
+.account-btn[hidden] { display: none; }
+.account-btn.signed-in { padding: 4px 8px; position: relative; }
+.avatar { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--duck); color: var(--on-duck); font-weight: 800; font-size: 0.78rem; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.sync-dot.synced { background: var(--pass); }
+.sync-dot.syncing { background: var(--duck); }
+.sync-dot.error { background: var(--fail); }
+.account-form { display: flex; flex-direction: column; gap: 12px; }
+.link-btn { align-self: flex-start; border: 0; background: none; padding: 0; color: var(--info); text-decoration: underline; cursor: pointer; font-size: 0.9rem; }
+@media (max-width: 420px) { .theme-btn { padding: 4px 8px; font-size: 0; gap: 0; } .theme-btn svg { width: 16px; height: 16px; } }
