@@ -3,6 +3,79 @@ import { openBulk } from '../bulk.js';
 import { store } from '../../core/store.js';
 import { buildDemoState } from '../../core/demo.js';
 import { LISTS } from '../../data/problems.js';
+import { addDays, todayKey } from '../../core/dates.js';
+import { buildIcs, googleCalendarUrl, parseTime } from '../../core/reminder.js';
+
+const PUBLIC_URL = 'https://andreasm79.github.io/requack/';
+let downloads;
+
+function appUrl() {
+  const here = location.href.split('#')[0];
+  return location.protocol === 'https:' && !window.claude ? here : PUBLIC_URL;
+}
+
+async function saveFile(filename, data) {
+  if (window.claude && typeof window.claude.use === 'function') {
+    if (downloads === undefined) downloads = await window.claude.use('downloads').catch(() => null);
+    if (!downloads) throw new Error('Downloads are not available here. Use the Google Calendar button instead.');
+    await downloads.save({ filename, data });
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([data], { type: 'text/calendar' }));
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+function reminderCard() {
+  const time = h('input', { id: 'reminder-time', type: 'time', value: '19:00' });
+  const message = h('p', { class: 'small', role: 'status' });
+  const details = () => {
+    const parsed = parseTime(time.value);
+    if (!parsed) return null;
+    const now = new Date();
+    const today = todayKey();
+    const passed = now.getHours() * 60 + now.getMinutes() >= parsed.hour * 60 + parsed.minute;
+    return { ...parsed, dateKey: passed ? addDays(today, 1) : today, url: appUrl() };
+  };
+  const google = h('a', { class: 'btn', href: '#', target: '_blank', rel: 'noopener' }, 'Add to Google Calendar ↗');
+  const sync = () => {
+    const value = details();
+    if (value) google.href = googleCalendarUrl({ ...value, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone });
+  };
+  time.addEventListener('input', sync);
+  sync();
+  return h('section', { class: 'card' },
+    h('h2', null, 'daily reminder'),
+    h('p', { class: 'muted small' }, 'A recall queue only works if you open it. Add a 15 minute slot to your calendar that repeats every day.'),
+    h('div', { class: 'field' }, h('label', { for: 'reminder-time' }, 'Time'), time),
+    h('div', { class: 'actions' },
+      google,
+      h('button', {
+        class: 'btn', type: 'button',
+        onclick: async () => {
+          const value = details();
+          if (!value) {
+            message.className = 'error';
+            message.textContent = 'Pick a time first.';
+            return;
+          }
+          try {
+            await saveFile('requack-daily.ics', buildIcs(value));
+            message.className = 'small muted';
+            message.textContent = 'Saved requack-daily.ics. Open it to add the event to Apple Calendar or Outlook.';
+          } catch (error) {
+            message.className = 'error';
+            message.textContent = error.message || 'The download was cancelled.';
+          }
+        },
+      }, 'Download .ics (Apple, Outlook)')),
+    message
+  );
+}
 
 function settingsCard(state) {
   const settings = state.settings;
@@ -113,5 +186,5 @@ function aboutCard() {
 
 export function renderMore(today) {
   const state = store.get();
-  return [h('h1', null, 'More'), settingsCard(state), backupCard(), shortcutsCard(), dangerCard(state, today), aboutCard()];
+  return [h('h1', null, 'More'), settingsCard(state), reminderCard(), backupCard(), shortcutsCard(), dangerCard(state, today), aboutCard()];
 }
