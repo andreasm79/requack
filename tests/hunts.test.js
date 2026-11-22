@@ -20,7 +20,7 @@ test('every built-in hunt has marked bug lines and clean code', () => {
     }
   }
   assert.equal(ids.size, HUNTS.length);
-  assert.equal(HUNTS.length, 30);
+  assert.equal(HUNTS.length, 32);
 });
 
 test('markers are stripped and indentation survives', () => {
@@ -72,10 +72,11 @@ test('generated repo module is up to date with hunts-src', () => {
 
 test('repo hunts have a ticket, a source and several files', () => {
   const repos = HUNTS.filter((hunt) => hunt.files.length > 3);
-  assert.equal(repos.length, 6);
+  assert.equal(repos.length, 8);
+  assert.equal(repos.filter((hunt) => hunt.source).length, 6);
   for (const hunt of repos) {
     assert.ok(hunt.scenario.length > 40, hunt.id);
-    assert.match(hunt.source.url, /^https:\/\//, hunt.id);
+    if (hunt.source) assert.match(hunt.source.url, /^https:\/\//, hunt.id);
     assert.ok(hunt.files.length >= 8, hunt.id);
   }
 });
@@ -103,4 +104,14 @@ test('file languages come from the extension', () => {
   assert.equal(langFor('include/tls.h', 'python'), 'c');
   assert.equal(langFor('docs/SIS.md', 'python'), 'plain');
   assert.equal(langFor('Makefile', 'c'), 'c');
+});
+
+test('runnable repos list their visible tests and ship hidden acceptance tests', async () => {
+  const { isRunnableRepo, testFilesOf } = await import('../js/data/hunts.js');
+  const runnable = HUNTS.filter(isRunnableRepo);
+  assert.deepEqual(runnable.map((hunt) => hunt.id).sort(), ['hunt-frozen-clock', 'hunt-login-limit', 'hunt-orbit-units', 'hunt-sensor-boot', 'hunt-waf-cpu']);
+  for (const hunt of runnable) {
+    assert.ok(testFilesOf(hunt).length >= 1, hunt.id);
+    for (const file of hunt.acceptance) assert.ok(file.name.startsWith('acceptance/'), hunt.id);
+  }
 });

@@ -58,5 +58,5 @@ test('share text has a 14 character sparkline', () => {
   assert.equal([...line].length, 14);
   assert.ok(line.endsWith('█'));
   store.clear();
-  assert.ok(statsText(store.get(), today).includes('attempted  0/180'));
+  assert.ok(statsText(store.get(), today).includes('attempted  0/182'));
 });

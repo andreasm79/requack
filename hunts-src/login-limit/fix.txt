@@ -1,0 +1,4 @@
+if (now - entry.windowStart >= this.windowSeconds * 1000) {
+  entry.windowStart = now;
+  entry.count = 0;
+}

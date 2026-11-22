@@ -1,0 +1,8 @@
+{
+  "title": "Brute force goes straight through",
+  "lang": "javascript",
+  "difficulty": "Medium",
+  "tag": "Units",
+  "ticket": "SEC-88. The pen test made 500 login attempts against one account in under a minute and none were rejected. The limit is supposed to be 10 attempts per 60 seconds per IP. The limiter's unit tests are green.",
+  "explanation": "The config says windowSeconds: 60, but the limiter compares it against Date.now(), which is in milliseconds. So each window lasts 60 ms instead of 60 s, and every attempt more than 60 ms after the first one starts a fresh window. The unit tests only fire calls in the same millisecond, so they never see a window expire."
+}

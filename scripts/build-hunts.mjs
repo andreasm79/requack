@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -7,7 +7,7 @@ const SOURCE = join(ROOT, 'hunts-src');
 const OUTPUT = join(ROOT, 'js/data/repos.js');
 const read = (path) => readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
 const ORDER = [
-  'waf-cpu', 'sensor-boot', 'router-flood', 'log-lookup', 'tls-verify', 'orbit-units',
+  'waf-cpu', 'sensor-boot', 'router-flood', 'log-lookup', 'tls-verify', 'orbit-units', 'frozen-clock', 'login-limit',
   'order-identity', 'social-date', 'seat-hash', 'never-booked', 'badge-name', 'bill-split',
 ];
 
@@ -26,11 +26,16 @@ export function buildHunts() {
     const dir = join(SOURCE, id);
     const meta = JSON.parse(read(join(dir, 'hunt.json')));
     const repo = join(dir, 'repo');
+    const acceptanceDir = join(dir, 'acceptance');
+    const acceptance = existsSync(acceptanceDir)
+      ? walk(acceptanceDir).map((path) => ({ name: `acceptance/${relative(acceptanceDir, path).split('\\').join('/')}`, code: read(path) }))
+      : [];
     return {
       id: `hunt-${id}`,
       ...meta,
       fix: read(join(dir, 'fix.txt')).replace(/\s+$/, ''),
       files: walk(repo).map((path) => ({ name: relative(repo, path).split('\\').join('/'), code: read(path) })),
+      acceptance,
     };
   });
 }

@@ -45,7 +45,7 @@ test('forecast puts overdue cards on day zero', () => {
 test('totals and pattern stats agree', () => {
   const state = stateWith([['two-sum', 'good', TODAY], ['3sum', 'again', TODAY], ['3sum', 'hard', TODAY], ['3sum', 'again', TODAY]]);
   const summary = totals(state, TODAY);
-  assert.equal(summary.total, 180);
+  assert.equal(summary.total, 182);
   assert.equal(summary.solved, 2);
   const rows = patternStats(state, TODAY);
   assert.equal(rows.reduce((sum, row) => sum + row.solved, 0), 2);
@@ -55,7 +55,7 @@ test('totals and pattern stats agree', () => {
 test('blind 75 list narrows the totals', () => {
   const state = defaultState();
   state.settings.list = 'blind75';
-  assert.equal(totals(state, TODAY).total, 105);
+  assert.equal(totals(state, TODAY).total, 107);
 });
 
 test('projection uses recent pace', () => {
@@ -96,7 +96,7 @@ test('custom problems of any kind keep their fields', () => {
   assert.equal(state.custom[0].prompt, 'Scale to 100M links.');
   assert.equal(state.custom[1].pattern, 'Amazon LPs');
   assert.equal(state.custom[2].kind, 'coding');
-  assert.equal(totals(state, TODAY).total, 183);
+  assert.equal(totals(state, TODAY).total, 185);
 });
 
 test('bug hunts stay out of the new queue and rotate daily', () => {
@@ -106,7 +106,7 @@ test('bug hunts stay out of the new queue and rotate daily', () => {
   const first = huntOfTheDay(state, TODAY);
   const second = huntOfTheDay(state, addDays(TODAY, 1));
   assert.ok(first && second && first.id !== second.id);
-  assert.deepEqual(huntTotals(state), { total: 30, done: 0 });
+  assert.deepEqual(huntTotals(state), { total: 32, done: 0 });
   state.cards[first.id] = review(newCard(first.id), 'good', TODAY);
   assert.equal(huntTotals(state).done, 1);
   assert.equal(newQueue(state, TODAY).length, 10);

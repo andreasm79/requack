@@ -517,6 +517,7 @@ function toHunt(hunt) {
     fix: hunt.fix,
     files,
     source: hunt.source || null,
+    acceptance: hunt.acceptance || [],
     blind75: false,
     premium: false,
     url: '',
@@ -526,6 +527,16 @@ function toHunt(hunt) {
 }
 
 export const HUNTS = [...RAW, ...REPO_HUNTS].map(toHunt);
+
+const TEST_FILE = /(^|\/)(test_[^/]*\.py|[^/]*\.test\.js)$/;
+
+export function testFilesOf(problem) {
+  return problem.files.map((file) => file.name).filter((name) => TEST_FILE.test(name));
+}
+
+export function isRunnableRepo(problem) {
+  return Boolean(problem.files) && ['python', 'javascript'].includes(problem.lang) && (problem.acceptance || []).length > 0;
+}
 
 export function isRepo(problem) {
   return Boolean(problem.files) && problem.files.length > 3;

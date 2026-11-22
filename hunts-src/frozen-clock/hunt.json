@@ -1,0 +1,8 @@
+{
+  "title": "Reviews keep landing on the same day",
+  "lang": "python",
+  "difficulty": "Medium",
+  "tag": "Default arguments",
+  "ticket": "BUG-512. Students say the planner schedules every review relative to the day the server was last restarted. After a redeploy it is fine for a day, then drifts. The unit tests pass every time CI runs.",
+  "explanation": "next_review has a default argument today=clock.today(). Python evaluates default arguments once, when the def line runs at import time, so the server keeps using the date it started on. CI never notices because every test run imports fresh on the same day. Default to None and read the clock inside the function."
+}

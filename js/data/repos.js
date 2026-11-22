@@ -12,7 +12,7 @@ export const REPO_HUNTS = [
    "label": "Cloudflare: Details of the Cloudflare outage on July 2, 2019",
    "url": "https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019"
   },
-  "fix": "pattern: /(?:[\"'\\]}\\\\\\d`+-]|true|false|null|undefined)+\\)*;?(?:\\s|-|~|!)*[^=]*=/i,\n// and run customer-facing patterns in a linear-time engine (RE2) or with a CPU budget",
+  "fix": "pattern: /(?:[\"'\\]}\\\\`+-]|\\d|true|false|null|undefined)\\)*;?[^=]*=/i,\n// one wildcard, no nesting; better still, run customer patterns in a linear-time engine (RE2)",
   "files": [
    {
     "name": "package.json",
@@ -57,6 +57,12 @@ export const REPO_HUNTS = [
    {
     "name": "test/xss.test.js",
     "code": "const test = require('node:test');\nconst assert = require('node:assert');\nconst { inspect } = require('../src/waf/engine');\nconst { loadRules } = require('../src/waf/rules');\n\nconst rules = loadRules('managed');\n\ntest('blocks a script tag', () => {\n  assert.equal(inspect(rules, { url: '/?q=<script>alert(1)</script>' }).ruleId, 'xss-300');\n});\n\ntest('flags a quote breakout', () => {\n  assert.equal(inspect(rules, { url: \"/?q=1';alert(document.cookie)=1\" }).ruleId, 'xss-302');\n});\n\ntest('lets normal traffic through', () => {\n  assert.equal(inspect(rules, { url: '/products?page=2' }).block, false);\n});\n"
+   }
+  ],
+  "acceptance": [
+   {
+    "name": "acceptance/acceptance.test.js",
+    "code": "const test = require('node:test');\nconst assert = require('node:assert');\nconst { inspect } = require('../src/waf/engine');\nconst { loadRules } = require('../src/waf/rules');\n\nconst rules = loadRules('managed');\n\ntest('a 5,000 character body is inspected in under a second', () => {\n  const started = Date.now();\n  inspect(rules, { url: '/upload', body: '1'.repeat(5000) });\n  const took = Date.now() - started;\n  assert.ok(took < 1000, `inspection took ${took} ms`);\n});\n\ntest('the quote breakout is still flagged', () => {\n  assert.equal(inspect(rules, { url: \"/?q=1';alert(document.cookie)=1\" }).ruleId, 'xss-302');\n});\n\ntest('a script tag is still blocked', () => {\n  assert.equal(inspect(rules, { url: '/?q=<script>x</script>' }).block, true);\n});\n"
    }
   ]
  },
@@ -105,6 +111,12 @@ export const REPO_HUNTS = [
    {
     "name": "tests/test_interpreter.py",
     "code": "from sensor.interpreter import ContentInterpreter\nfrom sensor.ipc import IpcMonitor\n\n\ndef instance(criteria):\n    return {\"id\": \"t\", \"type\": \"ipc\", \"name\": \"test\", \"criteria\": criteria}\n\n\ndef sample_inputs():\n    monitor = IpcMonitor()\n    return monitor.inputs_for(monitor._next_event())\n\n\ndef test_wildcards_match_anything():\n    interpreter = ContentInterpreter([instance([\"*\"] * 21)])\n    assert list(interpreter.evaluate(sample_inputs()))\n\n\ndef test_pipe_name_criterion():\n    interpreter = ContentInterpreter([instance([\"spoolss\"] + [\"*\"] * 20)])\n    assert list(interpreter.evaluate(sample_inputs()))\n\n\ndef test_non_matching_criterion():\n    interpreter = ContentInterpreter([instance([\"lsass\"] + [\"*\"] * 20)])\n    assert not list(interpreter.evaluate(sample_inputs()))\n"
+   }
+  ],
+  "acceptance": [
+   {
+    "name": "acceptance/test_acceptance.py",
+    "code": "import json\n\nfrom sensor.interpreter import ContentInterpreter\nfrom sensor.ipc import IpcMonitor\n\n\ndef instance(criteria):\n    return {\"id\": \"t\", \"type\": \"ipc\", \"name\": \"test\", \"criteria\": criteria}\n\n\ndef test_channel_291_does_not_crash_the_sensor():\n    with open(\"content/channel_291.json\") as handle:\n        channel = json.load(handle)\n    monitor = IpcMonitor()\n    inputs = monitor.inputs_for(monitor._next_event())\n    list(ContentInterpreter(channel[\"instances\"]).evaluate(inputs))\n\n\ndef test_a_criterion_past_the_inputs_never_matches():\n    interpreter = ContentInterpreter([instance([\"*\"] * 20 + [\"anything\"])])\n    assert list(interpreter.evaluate([\"x\"] * 20)) == []\n\n\ndef test_real_matches_still_fire():\n    interpreter = ContentInterpreter([instance([\"spoolss\"] + [\"*\"] * 20)])\n    monitor = IpcMonitor()\n    assert len(list(interpreter.evaluate(monitor.inputs_for(monitor._next_event())))) == 1\n"
    }
   ]
  },
@@ -174,7 +186,8 @@ export const REPO_HUNTS = [
     "name": "tools/Deploy.java",
     "code": "import java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.util.List;\n\npublic class Deploy {\n    public static void main(String[] args) throws Exception {\n        Path artifact = Path.of(args[0]);\n        List<String> hosts = Files.readAllLines(Path.of(\"deploy/hosts.txt\"));\n\n!!        for (int i = 0; i < hosts.size() - 1; i++) {\n            String host = hosts.get(i).trim();\n            copy(artifact, host);\n            restart(host);\n            System.out.println(\"deployed \" + artifact.getFileName() + \" to \" + host);\n        }\n        System.out.println(\"deploy finished\");\n    }\n\n    private static void copy(Path artifact, String host) throws Exception {\n        run(\"scp\", artifact.toString(), host + \":/opt/smars/smars.jar\");\n    }\n\n    private static void restart(String host) throws Exception {\n        run(\"ssh\", host, \"systemctl restart smars\");\n    }\n\n    private static void run(String... command) throws Exception {\n        Process process = new ProcessBuilder(command).inheritIO().start();\n        if (process.waitFor() != 0) {\n            throw new IllegalStateException(\"failed: \" + String.join(\" \", command));\n        }\n    }\n}\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-log-lookup",
@@ -222,7 +235,8 @@ export const REPO_HUNTS = [
     "name": "test/AuditLogTest.java",
     "code": "package app.log;\n\nimport static org.junit.jupiter.api.Assertions.assertEquals;\n\nimport org.junit.jupiter.api.Test;\n\nclass AuditLogTest {\n    @Test\n    void fillsPlaceholdersInOrder() {\n        assertEquals(\"a=1 b=2\", AuditLog.format(\"a={} b={}\", 1, 2));\n    }\n\n    @Test\n    void leavesExtraPlaceholdersAlone() {\n        assertEquals(\"only 1 {}\", AuditLog.format(\"only {} {}\", 1));\n    }\n\n    @Test\n    void resolvesSystemProperties() {\n        System.setProperty(\"app.name\", \"members-portal\");\n        assertEquals(\"members-portal\", new Interpolator().resolve(\"${sys:app.name}\"));\n    }\n}\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-tls-verify",
@@ -270,7 +284,8 @@ export const REPO_HUNTS = [
     "name": "tests/test_handshake.c",
     "code": "#include <assert.h>\n#include <stdio.h>\n#include \"tls.h\"\n#include \"fixtures.h\"\n\nstatic void accepts_valid_server(void)\n{\n    tls_session session = fixture_session();\n    tls_status status = tls_handle_server_key_exchange(&session,\n                                                       FIXTURE_SKE, FIXTURE_SKE_LEN);\n    assert(status == TLS_OK);\n}\n\nstatic void rejects_truncated_message(void)\n{\n    tls_session session = fixture_session();\n    assert(tls_handle_server_key_exchange(&session, FIXTURE_SKE, 3) == TLS_PROTOCOL_ERROR);\n}\n\nint main(void)\n{\n    accepts_valid_server();\n    rejects_truncated_message();\n    puts(\"all tests passed\");\n    return 0;\n}\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-orbit-units",
@@ -322,6 +337,120 @@ export const REPO_HUNTS = [
     "name": "tests/test_sm_forces.py",
     "code": "from ground.sm_forces import small_forces\n\n\nFIRINGS = [\n    {\"time\": \"1999-05-01T10:00:00Z\", \"thruster\": \"RCS-1\", \"duration_s\": 2.0},\n    {\"time\": \"1999-05-01T10:00:05Z\", \"thruster\": \"RCS-2\", \"duration_s\": 0.0},\n    {\"time\": \"1999-05-01T10:00:09Z\", \"thruster\": \"TCM-1\", \"duration_s\": 1.5},\n]\n\n\ndef test_one_record_per_real_firing():\n    assert len(small_forces(FIRINGS)) == 2\n\n\ndef test_impulse_is_positive():\n    assert all(record[\"impulse\"] > 0 for record in small_forces(FIRINGS))\n\n\ndef test_longer_firing_means_more_impulse():\n    short = small_forces([{**FIRINGS[0], \"duration_s\": 1.0}])[0][\"impulse\"]\n    long = small_forces([{**FIRINGS[0], \"duration_s\": 3.0}])[0][\"impulse\"]\n    assert long > short\n"
    }
+  ],
+  "acceptance": [
+   {
+    "name": "acceptance/test_acceptance.py",
+    "code": "from ground.sm_forces import small_forces\n\n\ndef test_impulse_follows_the_interface_spec_in_newton_seconds():\n    record = small_forces([{\"time\": \"1999-05-01T10:00:00Z\", \"thruster\": \"RCS-1\", \"duration_s\": 2.0}])[0]\n    assert abs(record[\"impulse\"] - 0.2 * 4.448222 * 2.0) < 1e-6, f\"impulse was {record['impulse']}\"\n\n\ndef test_main_engine_firing_in_newton_seconds():\n    record = small_forces([{\"time\": \"1999-05-01T10:00:09Z\", \"thruster\": \"TCM-1\", \"duration_s\": 1.5}])[0]\n    assert abs(record[\"impulse\"] - 5.0 * 4.448222 * 1.5) < 1e-6, f\"impulse was {record['impulse']}\"\n"
+   }
+  ]
+ },
+ {
+  "id": "hunt-frozen-clock",
+  "title": "Reviews keep landing on the same day",
+  "lang": "python",
+  "difficulty": "Medium",
+  "tag": "Default arguments",
+  "ticket": "BUG-512. Students say the planner schedules every review relative to the day the server was last restarted. After a redeploy it is fine for a day, then drifts. The unit tests pass every time CI runs.",
+  "explanation": "next_review has a default argument today=clock.today(). Python evaluates default arguments once, when the def line runs at import time, so the server keeps using the date it started on. CI never notices because every test run imports fresh on the same day. Default to None and read the clock inside the function.",
+  "fix": "def next_review(card, rating, today=None):\n    if today is None:\n        today = clock.today()\n    ...",
+  "files": [
+   {
+    "name": "README.md",
+    "code": "# study-planner\n\nSchedules spaced-repetition reviews for the society's revision app.\n\n- `planner/schedule.py` decides when a card is due next\n- `planner/clock.py` wraps the system clock so it can be faked in tests\n- `planner/api.py` is the thin layer the web app calls\n\nRun the tests with the Run tests button, or `python -m pytest` locally.\n"
+   },
+   {
+    "name": "planner/__init__.py",
+    "code": "\n"
+   },
+   {
+    "name": "planner/api.py",
+    "code": "from planner.schedule import is_due, next_review\nfrom planner.store import CardStore\n\nstore = CardStore()\n\n\ndef review(card_id, rating):\n    card = store.get(card_id)\n    updated = next_review(card, rating)\n    store.put(updated)\n    return {\"id\": card_id, \"due\": updated[\"due\"].isoformat()}\n\n\ndef due_cards():\n    return [card for card in store.all() if is_due(card)]\n"
+   },
+   {
+    "name": "planner/clock.py",
+    "code": "import datetime\n\n_override = None\n\n\ndef today():\n    return _override or datetime.date.today()\n\n\ndef set_today(value):\n    global _override\n    _override = value\n\n\ndef reset():\n    set_today(None)\n"
+   },
+   {
+    "name": "planner/intervals.py",
+    "code": "FIRST = {\"again\": 1, \"hard\": 2, \"good\": 4, \"easy\": 7}\nGROWTH = {\"again\": 0.0, \"hard\": 1.2, \"good\": 2.5, \"easy\": 3.2}\nMAX_DAYS = 180\n\n\ndef next_interval(previous, rating):\n    if previous == 0:\n        return FIRST[rating]\n    if rating == \"again\":\n        return 1\n    return min(MAX_DAYS, max(previous + 1, round(previous * GROWTH[rating])))\n"
+   },
+   {
+    "name": "planner/schedule.py",
+    "code": "import datetime\n\nfrom planner import clock\nfrom planner.intervals import next_interval\n\n\n!!def next_review(card, rating, today=clock.today()):\n    interval = next_interval(card[\"interval\"], rating)\n    return {\n        **card,\n        \"interval\": interval,\n        \"due\": today + datetime.timedelta(days=interval),\n        \"last_rating\": rating,\n    }\n\n\ndef is_due(card, today=None):\n    today = today or clock.today()\n    return card[\"due\"] <= today\n"
+   },
+   {
+    "name": "planner/store.py",
+    "code": "class CardStore:\n    def __init__(self):\n        self._cards = {}\n\n    def put(self, card):\n        self._cards[card[\"id\"]] = card\n\n    def get(self, card_id):\n        return self._cards[card_id]\n\n    def all(self):\n        return list(self._cards.values())\n"
+   },
+   {
+    "name": "tests/test_intervals.py",
+    "code": "from planner.intervals import MAX_DAYS, next_interval\n\n\ndef test_first_review_uses_fixed_steps():\n    assert next_interval(0, \"again\") == 1\n    assert next_interval(0, \"easy\") == 7\n\n\ndef test_good_grows_the_gap():\n    assert next_interval(4, \"good\") == 10\n\n\ndef test_gap_is_capped():\n    assert next_interval(170, \"easy\") == MAX_DAYS\n"
+   },
+   {
+    "name": "tests/test_schedule.py",
+    "code": "import datetime\n\nfrom planner.schedule import is_due, next_review\n\n\ndef card(**fields):\n    return {\"id\": \"two-sum\", \"interval\": 0, \"due\": None, **fields}\n\n\ndef test_first_good_review_is_four_days_out():\n    today = datetime.date.today()\n    updated = next_review(card(), \"good\")\n    assert updated[\"due\"] == today + datetime.timedelta(days=4)\n\n\ndef test_explicit_date_is_respected():\n    start = datetime.date(2026, 11, 1)\n    assert next_review(card(), \"again\", today=start)[\"due\"] == datetime.date(2026, 11, 2)\n\n\ndef test_due_today_counts_as_due():\n    today = datetime.date(2026, 11, 22)\n    assert is_due(card(due=today), today=today)\n"
+   }
+  ],
+  "acceptance": [
+   {
+    "name": "acceptance/test_acceptance.py",
+    "code": "import datetime\n\nfrom planner import clock\nfrom planner.schedule import next_review\n\n\ndef test_reviews_follow_the_clock_after_startup():\n    try:\n        clock.set_today(datetime.date(2030, 1, 10))\n        updated = next_review({\"id\": \"a\", \"interval\": 0, \"due\": None}, \"good\")\n        assert updated[\"due\"] == datetime.date(2030, 1, 14), f\"due was {updated['due']}\"\n    finally:\n        clock.reset()\n\n\ndef test_the_next_day_moves_too():\n    try:\n        clock.set_today(datetime.date(2030, 1, 11))\n        updated = next_review({\"id\": \"a\", \"interval\": 0, \"due\": None}, \"again\")\n        assert updated[\"due\"] == datetime.date(2030, 1, 12), f\"due was {updated['due']}\"\n    finally:\n        clock.reset()\n"
+   }
+  ]
+ },
+ {
+  "id": "hunt-login-limit",
+  "title": "Brute force goes straight through",
+  "lang": "javascript",
+  "difficulty": "Medium",
+  "tag": "Units",
+  "ticket": "SEC-88. The pen test made 500 login attempts against one account in under a minute and none were rejected. The limit is supposed to be 10 attempts per 60 seconds per IP. The limiter's unit tests are green.",
+  "explanation": "The config says windowSeconds: 60, but the limiter compares it against Date.now(), which is in milliseconds. So each window lasts 60 ms instead of 60 s, and every attempt more than 60 ms after the first one starts a fresh window. The unit tests only fire calls in the same millisecond, so they never see a window expire.",
+  "fix": "if (now - entry.windowStart >= this.windowSeconds * 1000) {\n  entry.windowStart = now;\n  entry.count = 0;\n}",
+  "files": [
+   {
+    "name": "package.json",
+    "code": "{\n  \"name\": \"members-login\",\n  \"version\": \"2.1.0\",\n  \"main\": \"src/server.js\",\n  \"scripts\": {\n    \"test\": \"node --test test/\"\n  }\n}\n"
+   },
+   {
+    "name": "src/auth/login.js",
+    "code": "const config = require('../config');\nconst { RateLimiter } = require('./rateLimiter');\nconst { checkPassword } = require('./passwords');\n\nconst limiter = new RateLimiter(config.loginLimit);\n\nfunction login({ ip, email, password }) {\n  if (!limiter.allow(ip)) {\n    return { status: 429, body: 'Too many attempts. Try again in a minute.' };\n  }\n  if (!checkPassword(email, password)) {\n    return { status: 401, body: 'Wrong email or password.' };\n  }\n  return { status: 200, body: 'Welcome back.' };\n}\n\nmodule.exports = { login, limiter };\n"
+   },
+   {
+    "name": "src/auth/passwords.js",
+    "code": "const crypto = require('crypto');\n\nconst USERS = new Map([\n  ['ada@tcd.ie', { salt: 'c1', hash: 'f3a9' }],\n  ['grace@tcd.ie', { salt: '7e', hash: '0b12' }],\n]);\n\nfunction hash(password, salt) {\n  let h = 0;\n  for (const c of salt + password) h = (h * 31 + c.charCodeAt(0)) % 65536;\n  return h.toString(16).padStart(4, '0');\n}\n\nfunction checkPassword(email, password) {\n  const user = USERS.get(email);\n  return Boolean(user) && hash(password, user.salt) === user.hash;\n}\n\nmodule.exports = { checkPassword, hash };\n"
+   },
+   {
+    "name": "src/auth/rateLimiter.js",
+    "code": "class RateLimiter {\n  constructor({ maxAttempts, windowSeconds }, now = () => Date.now()) {\n    this.maxAttempts = maxAttempts;\n    this.windowSeconds = windowSeconds;\n    this.now = now;\n    this.entries = new Map();\n  }\n\n  allow(key) {\n    const now = this.now();\n    const entry = this.entries.get(key) || { windowStart: now, count: 0 };\n!!    if (now - entry.windowStart >= this.windowSeconds) {\n      entry.windowStart = now;\n      entry.count = 0;\n    }\n    entry.count += 1;\n    this.entries.set(key, entry);\n    return entry.count <= this.maxAttempts;\n  }\n}\n\nmodule.exports = { RateLimiter };\n"
+   },
+   {
+    "name": "src/config.js",
+    "code": "module.exports = {\n  loginLimit: {\n    maxAttempts: 10,\n    windowSeconds: 60,\n  },\n  sessionHours: 12,\n};\n"
+   },
+   {
+    "name": "src/http/router.js",
+    "code": "const { login } = require('../auth/login');\n\nconst routes = {\n  'POST /login': (req) => login({ ip: req.ip, ...req.body }),\n  'GET /health': () => ({ status: 200, body: 'ok' }),\n};\n\nfunction handle(req) {\n  const route = routes[`${req.method} ${req.path}`];\n  return route ? route(req) : { status: 404, body: 'Not found' };\n}\n\nmodule.exports = { handle };\n"
+   },
+   {
+    "name": "src/server.js",
+    "code": "const http = require('http');\nconst { handle } = require('./http/router');\n\nhttp.createServer((req, res) => {\n  let raw = '';\n  req.on('data', (chunk) => { raw += chunk; });\n  req.on('end', () => {\n    const body = raw ? JSON.parse(raw) : {};\n    const result = handle({ method: req.method, path: req.url, ip: req.socket.remoteAddress, body });\n    res.writeHead(result.status);\n    res.end(result.body);\n  });\n}).listen(3000);\n"
+   },
+   {
+    "name": "test/rateLimiter.test.js",
+    "code": "const test = require('node:test');\nconst assert = require('node:assert');\nconst { RateLimiter } = require('../src/auth/rateLimiter');\n\ntest('allows up to the limit', () => {\n  const limiter = new RateLimiter({ maxAttempts: 3, windowSeconds: 60 }, () => 1000);\n  assert.equal(limiter.allow('ip'), true);\n  assert.equal(limiter.allow('ip'), true);\n  assert.equal(limiter.allow('ip'), true);\n});\n\ntest('blocks the attempt after the limit', () => {\n  const limiter = new RateLimiter({ maxAttempts: 2, windowSeconds: 60 }, () => 1000);\n  limiter.allow('ip');\n  limiter.allow('ip');\n  assert.equal(limiter.allow('ip'), false);\n});\n\ntest('keeps separate counts per IP', () => {\n  const limiter = new RateLimiter({ maxAttempts: 1, windowSeconds: 60 }, () => 1000);\n  assert.equal(limiter.allow('a'), true);\n  assert.equal(limiter.allow('b'), true);\n});\n"
+   },
+   {
+    "name": "test/router.test.js",
+    "code": "const test = require('node:test');\nconst assert = require('node:assert');\nconst { handle } = require('../src/http/router');\n\ntest('unknown routes are 404', () => {\n  assert.equal(handle({ method: 'GET', path: '/nope' }).status, 404);\n});\n\ntest('health check is up', () => {\n  assert.equal(handle({ method: 'GET', path: '/health' }).body, 'ok');\n});\n"
+   }
+  ],
+  "acceptance": [
+   {
+    "name": "acceptance/acceptance.test.js",
+    "code": "const test = require('node:test');\nconst assert = require('node:assert');\nconst { RateLimiter } = require('../src/auth/rateLimiter');\n\nfunction clock(start) {\n  let t = start;\n  const now = () => t;\n  now.advance = (ms) => { t += ms; };\n  return now;\n}\n\ntest('the 11th attempt within a minute is blocked, even when spread out', () => {\n  const now = clock(1_000_000);\n  const limiter = new RateLimiter({ maxAttempts: 10, windowSeconds: 60 }, now);\n  for (let i = 0; i < 10; i++) {\n    assert.equal(limiter.allow('ip'), true, `attempt ${i + 1} should be allowed`);\n    now.advance(500);\n  }\n  assert.equal(limiter.allow('ip'), false, 'attempt 11, five seconds in, was allowed');\n});\n\ntest('a new window opens after 60 seconds', () => {\n  const now = clock(5_000_000);\n  const limiter = new RateLimiter({ maxAttempts: 1, windowSeconds: 60 }, now);\n  limiter.allow('ip');\n  now.advance(59_000);\n  assert.equal(limiter.allow('ip'), false);\n  now.advance(2_000);\n  assert.equal(limiter.allow('ip'), true);\n});\n"
+   }
   ]
  },
  {
@@ -338,7 +467,8 @@ export const REPO_HUNTS = [
     "name": "orders.py",
     "code": "def mark_paid(order, payment):\n    if payment.amount_cents != order.total_cents:\n        raise ValueError(\"amount mismatch\")\n!!    if order.status is \"pending\":\n        order.status = \"paid\"\n        order.paid_at = payment.created_at\n        return True\n    return False\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-social-date",
@@ -354,7 +484,8 @@ export const REPO_HUNTS = [
     "name": "events.js",
     "code": "function christmasSocial(year) {\n  return {\n    title: 'DUCSS Christmas social',\n!!    start: new Date(year, 12, 18, 19, 0),\n    venue: 'The Pav',\n    capacity: 120,\n  };\n}\n\nfunction termEvents(year) {\n  return [\n    { title: 'Freshers meet and greet', start: new Date(year, 8, 22, 18, 0) },\n    { title: 'Hackathon', start: new Date(year, 10, 8, 10, 0) },\n    christmasSocial(year),\n  ];\n}\n\nmodule.exports = { termEvents };\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-seat-hash",
@@ -374,7 +505,8 @@ export const REPO_HUNTS = [
     "name": "SeatMap.java",
     "code": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class SeatMap {\n    private final Map<Seat, String> holders = new HashMap<>();\n\n    public void assign(Seat seat, String student) {\n        holders.put(seat, student);\n    }\n\n    public String holderOf(Seat seat) {\n        return holders.get(seat);\n    }\n\n    public void moveAlong(Seat seat, int places) {\n!!        seat.number += places;\n    }\n}\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-never-booked",
@@ -394,7 +526,8 @@ export const REPO_HUNTS = [
     "name": "never_booked.sql",
     "code": "-- Members who have never booked an event, for the re-engagement email.\nSELECT m.id, m.name, m.email\nFROM members m\n!!WHERE m.id NOT IN (SELECT b.member_id FROM bookings b)\nORDER BY m.joined_at;\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-badge-name",
@@ -414,7 +547,8 @@ export const REPO_HUNTS = [
     "name": "badge.h",
     "code": "#ifndef BADGE_H\n#define BADGE_H\n\ntypedef struct {\n    char name[48];\n    char society[32];\n} badge_t;\n\nvoid make_badge(badge_t *badge, const char *name, const char *society);\n\n#endif\n"
    }
-  ]
+  ],
+  "acceptance": []
  },
  {
   "id": "hunt-bill-split",
@@ -430,6 +564,7 @@ export const REPO_HUNTS = [
     "name": "split.py",
     "code": "def split_bill(total, people):\n!!    share = round(total / people, 2)\n    shares = [share] * people\n    if sum(shares) != total:\n!!        shares[-1] += total - sum(shares)\n    return shares\n\n\ndef describe(total, names):\n    shares = split_bill(total, len(names))\n    return [f\"{name} owes €{share}\" for name, share in zip(names, shares)]\n"
    }
-  ]
+  ],
+  "acceptance": []
  }
 ];

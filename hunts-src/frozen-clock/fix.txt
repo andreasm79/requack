@@ -1,0 +1,4 @@
+def next_review(card, rating, today=None):
+    if today is None:
+        today = clock.today()
+    ...
