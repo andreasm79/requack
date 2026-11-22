@@ -8,6 +8,8 @@ import { renderBugs } from './ui/views/bugs.js';
 import { onRefresh } from './ui/refresh.js';
 import { openPalette } from './ui/palette.js';
 import { initTheme } from './ui/theme.js';
+import { openCodingOaSetup } from './ui/oa.js';
+import { openImport } from './ui/lists.js';
 import { openBulk } from './ui/bulk.js';
 import { openCustom, openDetail, openPractice, startDueSession, startMockOa } from './ui/flows.js';
 import { allHunts, dueCards, huntOfTheDay, problemIndex } from './core/stats.js';
@@ -41,7 +43,9 @@ function commands() {
   return [
     { label: 'Run all due recalls', keywords: 'session start review', run: startDueSession },
     { label: 'Bug hunt of the day', keywords: 'hunt find bug', run: () => { const hunt = huntOfTheDay(store.get(), todayKey()); if (hunt) openPractice(hunt); else location.hash = '#bugs'; } },
-    { label: 'Start a mock OA', keywords: 'assessment hackerrank codesignal timed test', run: startMockOa },
+    { label: 'Start a coding OA', keywords: 'assessment hackerrank codesignal timed test editor run code', run: openCodingOaSetup },
+    { label: 'Start a code review OA', keywords: 'assessment bug hunt mock timed', run: startMockOa },
+    { label: 'Import a list', keywords: 'company list paste leetcode csv', run: openImport },
     { label: 'Add anything', keywords: 'new custom problem create', run: () => openCustom() },
     { label: 'Mark problems as already solved', keywords: 'bulk import seed', run: openBulk },
     { label: 'Go to Today', keywords: 'home', run: go('today') },

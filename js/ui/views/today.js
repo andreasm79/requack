@@ -2,6 +2,8 @@ import { h, plural, toast } from '../dom.js';
 import { duck, quip } from '../duck.js';
 import { openLog, openPractice, startDueSession } from '../flows.js';
 import { isRunnable, openSolve } from '../solve.js';
+import { openCodingOaSetup } from '../oa.js';
+import { startMockOa } from '../flows.js';
 import { openBulk } from '../bulk.js';
 import { kindLabel, lineNumber } from './rows.js';
 import { store } from '../../core/store.js';
@@ -157,6 +159,16 @@ export function renderToday(today) {
           ? fresh.map(newRow)
           : h('div', { class: 'empty' }, state.settings.newPerDay === 0 ? 'New problems are switched off. Change the daily goal under More.' : 'New-problem goal hit for today. Pick more from Problems if you want.')
       )
+    ),
+    h('section', { class: 'section' },
+      h('div', { class: 'section-head' }, h('h2', null, 'practice like the real thing'), h('span', { class: 'count' }, 'timed · fullscreen · proctored')),
+      h('div', { class: 'oa-grid' },
+        h('button', { class: 'oa-tile', type: 'button', onclick: openCodingOaSetup },
+          h('span', { class: 'oa-tile-title' }, '▶ Coding OA'),
+          h('span', { class: 'oa-tile-text' }, 'The duck picks 2 to 4 problems from your list. Write Python or JavaScript and run it against hidden tests.')),
+        h('button', { class: 'oa-tile', type: 'button', onclick: startMockOa },
+          h('span', { class: 'oa-tile-title' }, '▶ Code review OA'),
+          h('span', { class: 'oa-tile-text' }, 'Two snippets and one repo with a bug in it. Find it, or fix it and pass the hidden tests.')))
     ),
     h('section', { class: 'section' },
       h('div', { class: 'section-head' }, h('h2', null, 'bug hunt of the day'), h('span', { class: 'count' }, 'AI-written code')),
