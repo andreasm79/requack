@@ -7,6 +7,7 @@
   "scripts": {
     "test": "node --test \"tests/*.test.js\"",
     "build:hunts": "node scripts/build-hunts.mjs",
+    "build:problems": "node scripts/build-problems.mjs",
     "start": "python3 -m http.server 8080"
   }
 }
