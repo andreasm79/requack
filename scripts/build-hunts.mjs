@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const SOURCE = join(ROOT, 'hunts-src');
 const OUTPUT = join(ROOT, 'js/data/repos.js');
+const read = (path) => readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
 const ORDER = [
   'waf-cpu', 'sensor-boot', 'router-flood', 'log-lookup', 'tls-verify', 'orbit-units',
   'order-identity', 'social-date', 'seat-hash', 'never-booked', 'badge-name', 'bill-split',
@@ -23,13 +24,13 @@ export function buildHunts() {
   if (missing.length > 0) throw new Error(`Add to ORDER: ${missing.join(', ')}`);
   return ORDER.map((id) => {
     const dir = join(SOURCE, id);
-    const meta = JSON.parse(readFileSync(join(dir, 'hunt.json'), 'utf8'));
+    const meta = JSON.parse(read(join(dir, 'hunt.json')));
     const repo = join(dir, 'repo');
     return {
       id: `hunt-${id}`,
       ...meta,
-      fix: readFileSync(join(dir, 'fix.txt'), 'utf8').replace(/\s+$/, ''),
-      files: walk(repo).map((path) => ({ name: relative(repo, path).split('\\').join('/'), code: readFileSync(path, 'utf8') })),
+      fix: read(join(dir, 'fix.txt')).replace(/\s+$/, ''),
+      files: walk(repo).map((path) => ({ name: relative(repo, path).split('\\').join('/'), code: read(path) })),
     };
   });
 }

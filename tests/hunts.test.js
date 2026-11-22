@@ -66,7 +66,7 @@ test('generated hunts without a marked bug or with junk are rejected', () => {
 });
 
 test('generated repo module is up to date with hunts-src', () => {
-  const current = readFileSync(new URL('../js/data/repos.js', import.meta.url), 'utf8');
+  const current = readFileSync(new URL('../js/data/repos.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   assert.equal(current, renderModule(buildHunts()), 'run npm run build:hunts');
 });
 
