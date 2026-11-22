@@ -1,6 +1,7 @@
 import { h, plural, toast } from '../dom.js';
 import { duck, quip } from '../duck.js';
 import { openLog, openPractice, startDueSession } from '../flows.js';
+import { isRunnable, openSolve } from '../solve.js';
 import { openBulk } from '../bulk.js';
 import { kindLabel, lineNumber } from './rows.js';
 import { store } from '../../core/store.js';
@@ -68,7 +69,9 @@ function newRow(problem, index) {
         problem.url ? h('a', { href: problem.url, target: '_blank', rel: 'noopener' }, problem.premium ? 'open (premium) ↗' : 'open ↗') : null
       )
     ),
-    h('div', { class: 'row-actions' }, h('button', { class: 'btn', type: 'button', onclick: () => openLog(problem) }, 'Log solve'))
+    h('div', { class: 'row-actions' },
+      isRunnable(problem.id) ? h('button', { class: 'btn primary', type: 'button', onclick: () => openSolve(problem.id) }, '▶ Solve') : null,
+      h('button', { class: 'btn', type: 'button', onclick: () => openLog(problem) }, isRunnable(problem.id) ? 'Log' : 'Log solve'))
   );
 }
 

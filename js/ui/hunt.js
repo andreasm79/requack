@@ -5,6 +5,8 @@ import { openSheet } from './sheet.js';
 import { sessionLabel } from './session.js';
 import { store } from '../core/store.js';
 import { LANGUAGES } from '../data/kinds.js';
+import { isRunnableRepo } from '../data/hunts.js';
+import { createIde } from './ide.js';
 
 const REPO_MIN_FILES = 4;
 let activeHunt = null;
@@ -123,7 +125,10 @@ export function openHunt(problem, { oa = null } = {}) {
     file: 0, picked: new Set(), phase: oa ? 'brief' : 'pick', outcome: null, hinted: false,
     started: Date.now(), seconds: 0, flash: null, timedOut: false,
     flags: { tab: 0, fullscreen: 0, paste: 0, copy: 0 }, inFullscreen: false,
+    view: 'review', fixed: false,
   };
+  const runnable = isRunnableRepo(problem);
+  let ide = null;
   const token = {};
   activeHunt = token;
 
@@ -233,7 +238,17 @@ export function openHunt(problem, { oa = null } = {}) {
       if (target) code.scrollTop = Math.max(0, target.offsetTop - code.clientHeight / 2);
     }
 
-    function check(gaveUp) {
+    function fixedIt() {
+      ui.fixed = true;
+      if (ui.phase === 'pick') {
+        if (ui.picked.size === 0) problem.files.forEach((file, f) => file.bugs.forEach((line) => ui.picked.add(key(f, line))));
+        check(false, true);
+      } else {
+        render();
+      }
+    }
+
+    function check(gaveUp, viaFix = false) {
       let hits = 0;
       let wrong = 0;
       for (const k of ui.picked) {
@@ -241,6 +256,8 @@ export function openHunt(problem, { oa = null } = {}) {
         else wrong += 1;
       }
       ui.outcome = gaveUp ? 'shown' : hits > 0 ? (wrong === 0 ? 'found' : 'partly') : 'missed';
+      if (viaFix) ui.outcome = 'fixed';
+      ui.view = 'review';
       if (ui.phase === 'pick') ui.seconds = Math.floor((Date.now() - ui.started) / 1000);
       ui.phase = 'result';
       ui.file = firstBugFile;
@@ -270,7 +287,8 @@ export function openHunt(problem, { oa = null } = {}) {
       const file = problem.files[firstBugFile];
       const where = `${file.name}, line ${file.bugs[0] + 1}`;
       const late = ui.timedOut ? ' Time ran out, so your flags were submitted automatically.' : '';
-      if (ui.outcome === 'found') return h('div', { class: 'callout pass' }, h('b', null, 'FOUND IT'), `Correct. The bug is in ${where}.${late}`);
+      if (ui.outcome === 'fixed') return h('div', { class: 'callout pass' }, h('b', null, 'FIXED'), `Your change makes every visible and hidden test pass. The bug was in ${where}.`);
+      if (ui.outcome === 'found') return h('div', { class: 'callout pass' }, h('b', null, 'FOUND IT'), `Correct. The bug is in ${where}.${late}${runnable && !ui.fixed ? ' Now try to fix it in Fix & test.' : ''}`);
       if (ui.outcome === 'partly') return h('div', { class: 'callout pass' }, h('b', null, 'FOUND IT, WITH NOISE'), `You flagged the bug in ${where}, and also lines that are fine (red).${late}`);
       if (ui.outcome === 'missed') {
         return h('div', { class: 'callout fail' }, h('b', null, ui.timedOut ? 'TIME UP' : 'MISSED'),
@@ -305,7 +323,20 @@ export function openHunt(problem, { oa = null } = {}) {
       }
     }
 
+    function viewSwitch() {
+      if (!runnable) return null;
+      const pill = (value, label) => h('button', {
+        class: 'pill', type: 'button', 'aria-pressed': String(ui.view === value),
+        onclick: () => { ui.view = value; render(); if (value === 'ide') ide.refresh(); },
+      }, label);
+      return h('div', { class: 'view-switch', role: 'group', 'aria-label': 'View' }, pill('review', 'Review'), pill('ide', `Fix & test${ui.fixed ? ' ✓' : ''}`));
+    }
+
     function codeArea() {
+      if (runnable && ui.view === 'ide') {
+        if (!ide) ide = createIde(problem, { onFixed: fixedIt });
+        return ide.el;
+      }
       const file = problem.files[ui.file];
       const block = codeBlock(file.lines, langFor(file.name, problem.lang), {
         marks: marksFor(ui.file),
@@ -359,14 +390,17 @@ export function openHunt(problem, { oa = null } = {}) {
           clock
         ),
         h('div', { class: 'callout' }, h('b', null, repo ? 'TICKET' : 'SYMPTOM'), problem.scenario),
+        viewSwitch(),
         codeArea(),
       ];
 
       if (ui.phase === 'pick') {
         fill(body, ...head,
-          h('p', { class: 'muted small' }, repo
-            ? 'Open files from the tree, or grep. Tap the line you would flag in review. You can flag lines in more than one file.'
-            : 'Tap the line you would flag in code review. You can flag more than one.'),
+          h('p', { class: 'muted small' }, ui.view === 'ide'
+            ? 'Fix the bug and Submit fix. Passing the hidden tests counts as finding it.'
+            : repo
+              ? `Open files from the tree, or grep. Tap the line you would flag in review. You can flag lines in more than one file.${runnable ? ' Or go to Fix & test and fix it.' : ''}`
+              : 'Tap the line you would flag in code review. You can flag more than one.'),
           h('div', { class: 'actions' },
             h('button', { class: 'btn primary', type: 'button', 'data-primary': true, disabled: ui.picked.size === 0, onclick: () => check(false) },
               ui.picked.size > 0 ? `Submit ${ui.picked.size} flagged` : 'Submit'),
@@ -379,10 +413,14 @@ export function openHunt(problem, { oa = null } = {}) {
 
       const card = store.get().cards[problem.id];
       const note = h('textarea', { id: 'hunt-note', value: card ? card.note : '', placeholder: 'What will you look for next time? e.g. "async function called without await is always truthy".' });
-      const suggested = ui.outcome === 'found' ? (ui.hinted ? 'hard' : 'good') : ui.outcome === 'partly' ? 'hard' : 'again';
+      const suggested = ui.outcome === 'fixed' ? (ui.hinted ? 'hard' : 'good') : ui.outcome === 'found' ? (ui.hinted ? 'hard' : 'good') : ui.outcome === 'partly' ? 'hard' : 'again';
       const minutes = Math.max(1, Math.round(ui.seconds / 60));
       const integrity = oa ? { limit: oa.limit, used: ui.seconds, timedOut: ui.timedOut, flags: { ...ui.flags } } : null;
       const fixFile = problem.files[firstBugFile];
+      if (ui.view === 'ide') {
+        fill(body, ...head, verdict(), integrityReport());
+        return;
+      }
       fill(body, ...head,
         verdict(),
         integrityReport(),

@@ -8,6 +8,9 @@ const MAX_FILES = 14;
 const MAX_LINES = 160;
 const OA_FLAGS = ['tab', 'fullscreen', 'paste', 'copy'];
 const SEED_SPREAD_DAYS = 14;
+const MAX_CODE = 30000;
+const MAX_REPO_FILES = 40;
+const CODE_LANGS = ['python', 'javascript'];
 const SEED_INTERVAL = 3;
 
 export function defaultState() {
@@ -15,6 +18,7 @@ export function defaultState() {
     version: 1,
     cards: {},
     custom: [],
+    code: {},
     settings: { list: 'neetcode150', newPerDay: 2, interviewDate: null, demo: false, introSeen: false },
   };
 }
@@ -109,9 +113,29 @@ function cleanCustom(raw) {
   return problem;
 }
 
+function cleanCode(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const entry = {};
+  for (const lang of CODE_LANGS) if (typeof raw[lang] === 'string') entry[lang] = raw[lang].slice(0, MAX_CODE);
+  if (CODE_LANGS.includes(raw.lang)) entry.lang = raw.lang;
+  if (raw.files && typeof raw.files === 'object') {
+    entry.files = {};
+    for (const [path, value] of Object.entries(raw.files).slice(0, MAX_REPO_FILES)) {
+      if (typeof value === 'string') entry.files[text(path, 120)] = value.slice(0, MAX_CODE);
+    }
+  }
+  return Object.keys(entry).length > 0 ? entry : null;
+}
+
 export function sanitize(raw) {
   const state = defaultState();
   if (!raw || typeof raw !== 'object') return state;
+  if (raw.code && typeof raw.code === 'object') {
+    for (const [id, value] of Object.entries(raw.code)) {
+      const entry = cleanCode(value);
+      if (entry) state.code[text(id, 140)] = entry;
+    }
+  }
   if (raw.cards && typeof raw.cards === 'object') {
     for (const [id, value] of Object.entries(raw.cards)) {
       const card = cleanCard(id, value);
@@ -177,6 +201,18 @@ function createStore() {
       lastChange = { id, previous: state.cards[id] || null };
       commit({ ...state, cards: { ...state.cards, [id]: updated } });
       return updated;
+    },
+    saveCode(id, patch) {
+      const entry = cleanCode({ ...(state.code[id] || {}), ...patch });
+      const code = { ...state.code };
+      if (entry) code[id] = entry;
+      else delete code[id];
+      state = { ...state, code };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        console.warn('Requack could not save your code', error);
+      }
     },
     undoLast() {
       if (!lastChange) return false;
