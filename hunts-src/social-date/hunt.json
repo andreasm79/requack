@@ -1,0 +1,8 @@
+{
+  "title": "The Christmas social is in January",
+  "lang": "javascript",
+  "difficulty": "Easy",
+  "tag": "Dates",
+  "ticket": "The society calendar shows the Christmas social on 18 January of the following year. Every other event is on the right day.",
+  "explanation": "The month argument of new Date(year, month, day) counts from 0, so 11 is December. Passing 12 overflows into January of the next year instead of throwing."
+}

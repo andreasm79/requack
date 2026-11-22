@@ -1,0 +1,5 @@
+void copy_name(char *dest, size_t dest_size, const char *src)
+{
+    strncpy(dest, src, dest_size - 1);
+    dest[dest_size - 1] = '\0';
+}

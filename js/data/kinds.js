@@ -7,7 +7,7 @@ export const KINDS = {
   other: { label: 'Other', topic: 'Other' },
 };
 
-export const LANGUAGES = { python: 'Python', javascript: 'JavaScript', java: 'Java', sql: 'SQL' };
+export const LANGUAGES = { python: 'Python', javascript: 'JavaScript', java: 'Java', sql: 'SQL', c: 'C' };
 
 export const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 

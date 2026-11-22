@@ -1,0 +1,12 @@
+{
+  "title": "Edge workers pinned at 100% CPU",
+  "lang": "javascript",
+  "difficulty": "Hard",
+  "tag": "ReDoS",
+  "ticket": "INC-2207, 13:42 UTC. Minutes after this morning's managed-rules release, every edge worker is pinned at 100% CPU and customers get 502s. No code shipped, only rules. The new rule is in simulate mode, so it supposedly can't affect traffic.",
+  "explanation": "The new xss-302 pattern ends in .*(?:.*=.*), nested greedy wildcards. When the text has no '=' after the prefix, the engine tries every way to split it between the wildcards, from every starting position. In Node, a body of 800 digits takes over 40 seconds to test against it. Simulate mode still runs the regex; it only changes what happens on a match.",
+  "source": {
+    "label": "Cloudflare: Details of the Cloudflare outage on July 2, 2019",
+    "url": "https://blog.cloudflare.com/details-of-the-cloudflare-outage-on-july-2-2019"
+  }
+}

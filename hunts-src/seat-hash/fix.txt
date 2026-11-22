@@ -1,0 +1,4 @@
+public void moveAlong(Seat seat, int places) {
+    String holder = holders.remove(seat);
+    holders.put(new Seat(seat.row, seat.number + places), holder);
+}

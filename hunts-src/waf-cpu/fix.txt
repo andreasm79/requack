@@ -1,0 +1,2 @@
+pattern: /(?:["'\]}\\\d`+-]|true|false|null|undefined)+\)*;?(?:\s|-|~|!)*[^=]*=/i,
+// and run customer-facing patterns in a linear-time engine (RE2) or with a CPU budget

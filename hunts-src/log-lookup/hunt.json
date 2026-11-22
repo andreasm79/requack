@@ -1,0 +1,12 @@
+{
+  "title": "Our server calls back to whoever logs in",
+  "lang": "java",
+  "difficulty": "Hard",
+  "tag": "Injection",
+  "ticket": "SECURITY REPORT. A researcher tried to log in with the User-Agent ${http:https://their-server.example/ping} and our server made an HTTP request to their machine. They also say that ${env:STRIPE_SECRET_KEY} as a User-Agent makes our live key show up in the log viewer. Lookups are only supposed to work in logging.properties.",
+  "explanation": "AuditLog.write formats the message first, which pastes the attacker's User-Agent into the text, and then runs the Interpolator over the whole line. Any ${env:...}, ${sys:...} or ${http:...} the attacker typed is resolved as if the developer had written it. Lookups belong to the trusted pattern, never to the values filled into it. Log4Shell was the same shape: Log4j resolved ${jndi:...} lookups inside logged user input.",
+  "source": {
+    "label": "Rapid7: CVE-2021-44228 (Log4Shell) analysis",
+    "url": "https://www.rapid7.com/blog/post/ra-cve-2021-44228-log4shell-analysis/"
+  }
+}

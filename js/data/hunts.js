@@ -1,4 +1,5 @@
 import { HUNT_PATTERN } from './kinds.js';
+import { REPO_HUNTS } from './repos.js';
 
 const BUG_MARK = '!!';
 
@@ -501,21 +502,31 @@ def save_results(path, results):
   },
 ];
 
-export const HUNTS = RAW.map((hunt) => ({
-  id: hunt.id,
-  title: hunt.title,
-  kind: 'bug',
-  pattern: HUNT_PATTERN,
-  difficulty: hunt.difficulty,
-  lang: hunt.lang,
-  tag: hunt.tag,
-  scenario: hunt.scenario,
-  explanation: hunt.explanation,
-  fix: hunt.fix,
-  files: hunt.files.map((file) => ({ name: file.name, ...parseMarked(file.code) })),
-  blind75: false,
-  premium: false,
-  url: '',
-  prompt: '',
-  custom: false,
-}));
+function toHunt(hunt) {
+  const files = hunt.files.map((file) => ({ name: file.name, ...parseMarked(file.code) }));
+  return {
+    id: hunt.id,
+    title: hunt.title,
+    kind: 'bug',
+    pattern: HUNT_PATTERN,
+    difficulty: hunt.difficulty,
+    lang: hunt.lang,
+    tag: hunt.tag,
+    scenario: hunt.scenario || hunt.ticket,
+    explanation: hunt.explanation,
+    fix: hunt.fix,
+    files,
+    source: hunt.source || null,
+    blind75: false,
+    premium: false,
+    url: '',
+    prompt: '',
+    custom: false,
+  };
+}
+
+export const HUNTS = [...RAW, ...REPO_HUNTS].map(toHunt);
+
+export function isRepo(problem) {
+  return Boolean(problem.files) && problem.files.length > 3;
+}

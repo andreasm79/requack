@@ -1,0 +1,12 @@
+{
+  "title": "Every host crashes on boot",
+  "lang": "python",
+  "difficulty": "Hard",
+  "tag": "Contract mismatch",
+  "ticket": "SEV-1, 04:09 UTC. Channel file 291 v4 went out to every host. Each machine that received it crashes inside the sensor as soon as IPC monitoring starts, and again after every reboot. The validator accepted the file and CI is green.",
+  "explanation": "The ipc template type declares 21 fields, and the validator checks instances against that number. But IpcMonitor.inputs_for only supplies 20 values. Earlier instances used a wildcard for field 21, so it was never read. Instance 291-03 is the first with a real 21st criterion, so _matches reads inputs[20], which does not exist. In Python that is an IndexError that kills the event loop; in the real sensor it was an out-of-bounds memory read and a kernel crash.",
+  "source": {
+    "label": "CrowdStrike: External Technical Root Cause Analysis, Channel File 291",
+    "url": "https://crowdstrike.com/wp-content/uploads/2024/08/Channel-File-291-Incident-Root-Cause-Analysis-08.06.2024.pdf"
+  }
+}

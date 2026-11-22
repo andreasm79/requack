@@ -1,0 +1,8 @@
+{
+  "title": "Nobody has ever not booked",
+  "lang": "sql",
+  "difficulty": "Medium",
+  "tag": "NULL logic",
+  "ticket": "The 'members who never booked an event' report worked for months. Since guest bookings launched last week it returns zero rows.",
+  "explanation": "Guest bookings have member_id NULL. x NOT IN (..., NULL) can never be true: comparing with NULL gives unknown, so every row is filtered out. NOT EXISTS ignores NULLs and gives the intended answer."
+}

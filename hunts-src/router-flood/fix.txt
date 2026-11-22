@@ -1,0 +1,6 @@
+// Deploy.java: every host, then verify the version on each one
+for (int i = 0; i < hosts.size(); i++) {
+
+// and give RLP a brand new flag value instead of reusing 0x08,
+// after deleting the Power Peg code path everywhere
+public static final int RLP = 0x10;

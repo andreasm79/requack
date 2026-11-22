@@ -1,0 +1,3 @@
+WHERE NOT EXISTS (
+  SELECT 1 FROM bookings b WHERE b.member_id = m.id
+);

@@ -1,0 +1,27 @@
+{
+  "channel": 291,
+  "version": 4,
+  "instances": [
+    {
+      "id": "291-01",
+      "type": "ipc",
+      "name": "Named pipe from unsigned client",
+      "criteria": ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*",
+                   "*", "*", "false", "*", "*", "*", "*", "*", "*", "*", "*"]
+    },
+    {
+      "id": "291-02",
+      "type": "ipc",
+      "name": "Remote pipe with impersonation",
+      "criteria": ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*",
+                   "*", "*", "*", "true", "*", "*", "*", "impersonate", "*", "*", "*"]
+    },
+    {
+      "id": "291-03",
+      "type": "ipc",
+      "name": "C2 framework default pipe",
+      "criteria": ["*", "*", "*", "*", "*", "*", "*", "*", "*", "*",
+                   "*", "*", "*", "*", "*", "*", "*", "*", "*", "*", "(msagent|postex)_"]
+    }
+  ]
+}

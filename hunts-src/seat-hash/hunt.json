@@ -1,0 +1,8 @@
+{
+  "title": "Moved seats lose their owner",
+  "lang": "java",
+  "difficulty": "Medium",
+  "tag": "Hashing",
+  "ticket": "After moveAlong() shifts a booking along the row, holderOf() returns null for both the old and the new seat. The map still has the same number of entries.",
+  "explanation": "Seat is a HashMap key, and its hashCode depends on number. moveAlong changes number while the object is still inside the map, so it now sits in the bucket for the old hash. Lookups for the new seat go to a different bucket, and lookups for the old seat find an object that no longer equals it."
+}

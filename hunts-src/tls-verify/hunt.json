@@ -1,0 +1,12 @@
+{
+  "title": "The client trusts any server key",
+  "lang": "c",
+  "difficulty": "Medium",
+  "tag": "Control flow",
+  "ticket": "CVE REPORT. A researcher shows our TLS client completes the handshake with a man-in-the-middle server whose ServerKeyExchange signature is random bytes. Valid servers still work and every test passes.",
+  "explanation": "There are two goto fail lines in a row after the params hash. The first belongs to the if. The second is unconditional, despite the indentation, so execution always jumps to fail with err still TLS_OK from the successful hash update. rsa_verify is never called, so any signature is accepted. The tests only ever feed a valid signature, so they cannot catch it.",
+  "source": {
+    "label": "Adam Langley: Apple's SSL/TLS bug (goto fail), 2014",
+    "url": "https://www.imperialviolet.org/2014/02/22/applebug.html"
+  }
+}

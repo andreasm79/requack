@@ -1,0 +1,8 @@
+{
+  "name": "edge-waf",
+  "version": "3.4.0",
+  "main": "src/server.js",
+  "scripts": {
+    "test": "node --test test/"
+  }
+}

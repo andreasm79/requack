@@ -1,0 +1,6 @@
+if ((err = sha256_update(&ctx, params, params_len)) != TLS_OK)
+    goto fail;
+if ((err = sha256_final(&ctx, digest)) != TLS_OK)
+    goto fail;
+
+/* and add a test that a corrupted signature is rejected */

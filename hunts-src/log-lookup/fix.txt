@@ -1,0 +1,5 @@
+private void write(String level, String pattern, Object... args) {
+    String trusted = interpolator.resolve(pattern);
+    String line = level + " [" + name + "] " + format(trusted, args);
+    shipper.ship(line);
+}

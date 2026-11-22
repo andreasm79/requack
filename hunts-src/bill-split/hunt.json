@@ -1,0 +1,8 @@
+{
+  "title": "You owe €1.6500000000000004",
+  "lang": "python",
+  "difficulty": "Medium",
+  "tag": "Floating point",
+  "ticket": "Splitting a €10 pizza order six ways asks the last person for €1.6500000000000004, and the payment provider rejects it.",
+  "explanation": "Money is handled as binary floats. 1.67 has no exact float representation, so the sum of six shares is slightly off, and the fix-up for the last person inherits that error and shows it: 1.6500000000000004. Work in whole cents, as integers, and only format as euro at the end."
+}

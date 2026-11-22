@@ -1,0 +1,10 @@
+# interpreter.py: never read past what the sensor supplied
+for index, pattern in enumerate(compiled):
+    if pattern is None:
+        continue
+    if index >= len(inputs) or not pattern.search(inputs[index]):
+        return False
+return True
+
+# ipc.py: supply the 21st field (named_pipe_path), and make the
+# validator compare against the inputs the sensor really provides

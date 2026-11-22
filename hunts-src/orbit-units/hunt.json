@@ -1,0 +1,12 @@
+{
+  "title": "The orbiter is arriving too low",
+  "lang": "python",
+  "difficulty": "Medium",
+  "tag": "Units",
+  "ticket": "MISSION ANOMALY. Orbit insertion is under way and tracking puts the spacecraft about 170 km lower than planned. Navigation has used the AMD files from ground processing for the whole nine-month cruise. Every unit test passes.",
+  "explanation": "The interface spec says AMD impulse is in newton-seconds. sm_forces multiplies the thruster table's pound-force by seconds and writes lbf·s, never applying LBF_TO_N (4.448). Navigation reads the file as N·s, so every small-force event was underestimated by a factor of about 4.45, and the error built up over the whole cruise. LBF_TO_N is defined and never used, which is the clue.",
+  "source": {
+    "label": "NASA: Mars Climate Orbiter Mishap Investigation Board, Phase I report",
+    "url": "https://llis.nasa.gov/llis_lib/pdf/1009464main1_0641-mr.pdf"
+  }
+}

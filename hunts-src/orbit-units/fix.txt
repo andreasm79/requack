@@ -1,0 +1,8 @@
+from nav.constants import LBF_TO_N
+
+
+def impulse_for(firing):
+    thruster = THRUSTERS[firing["thruster"]]
+    return thruster["thrust_lbf"] * LBF_TO_N * firing["duration_s"]
+
+# better still: carry the unit in the field name (impulse_ns) and test against the spec

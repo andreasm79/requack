@@ -5,7 +5,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --test",
+    "test": "node --test \"tests/*.test.js\"",
+    "build:hunts": "node scripts/build-hunts.mjs",
     "start": "python3 -m http.server 8080"
   }
 }

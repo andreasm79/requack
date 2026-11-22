@@ -1,0 +1,8 @@
+{
+  "title": "Every badge says 'Siobhán'",
+  "lang": "c",
+  "difficulty": "Easy",
+  "tag": "sizeof",
+  "ticket": "The badge printer cuts every name to 7 characters: 'Siobhán Ní Bhriain' prints as 'Siobhá'. Short names are fine.",
+  "explanation": "Inside copy_name, dest is a char pointer, not an array, so sizeof(dest) is the size of a pointer (8 on a 64-bit machine), not the size of the badge buffer. strncpy copies at most 7 bytes and the terminator goes at index 7. 'á' takes two bytes in UTF-8, which is why only six visible letters survive."
+}

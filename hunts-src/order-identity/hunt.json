@@ -1,0 +1,8 @@
+{
+  "title": "Paid, but still pending",
+  "lang": "python",
+  "difficulty": "Easy",
+  "tag": "Identity vs equality",
+  "ticket": "Orders created in tests get marked paid fine. Orders loaded from the database stay 'pending' after the payment goes through.",
+  "explanation": "is checks whether two names point at the same object, not whether two strings are equal. The literal 'pending' in a test is often the same interned object, so the check passes. A status read from the database is a new string object with the same text, so is returns False and the order is never marked paid."
+}

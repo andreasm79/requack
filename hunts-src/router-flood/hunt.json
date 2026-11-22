@@ -1,0 +1,12 @@
+{
+  "title": "One router won't stop sending orders",
+  "lang": "java",
+  "difficulty": "Hard",
+  "tag": "Deploy + dead code",
+  "ticket": "TRADING HALT, 09:30 ET. At the open, one of the eight SMARS routers started sending child orders for RLP-flagged parents and never stopped. The other seven route RLP correctly. Last night's 5.0 release repurposed flag 0x08 for RLP. The deploy log ends with 'deploy finished' and no errors.",
+  "explanation": "Deploy.java loops to hosts.size() - 1, so smars-08 never received 5.0 and is still running 4.1. In 4.1, flag 0x08 still means Power Peg. Power Peg loops until parent.isFilled(), but fill tracking had moved into BaseStrategy.send(), which the legacy path never calls, so filled stays at 0 and the loop never ends. Two mistakes line up: a deploy that silently skips a host, and a flag value reused while old code that reads it could still run.",
+  "source": {
+    "label": "SEC: Knight Capital order and press release, 2013",
+    "url": "https://www.sec.gov/news/press-release/2013-222"
+  }
+}
