@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Spaced repetition for interview prep, with a rubber duck. LeetCode, bug hunts in AI-written code, and anything else you add.">
+  <meta name="theme-color" content="#15161a">
+  <title>Requack</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 13' shape-rendering='crispEdges'%3E%3Cpath fill='%23f6c62b' d='M9 1h4v1H9zM8 2h6v3H8zM9 5h4v1H9zM1 6h1v1H1zM9 6h4v1H9zM1 7h2v1H1zM6 7h8v1H6zM1 8h14v2H1zM2 10h13v1H2zM2 11h12v1H2zM3 12h10v1H3z'/%3E%3Cpath fill='%23e08a3c' d='M13 4h3v1h-3zM13 5h2v1h-2z'/%3E%3Cpath fill='%2315161a' d='M11 3h1v1h-1z'/%3E%3C/svg%3E">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="#today" aria-label="Requack, go to Today">
+        <span id="brand-duck" class="brand-duck"></span>
+        <span class="brand-name">requack<span class="cursor" aria-hidden="true">_</span></span>
+      </a>
+      <button id="open-palette" class="cmdk" type="button" aria-label="Search problems and commands"><span>search</span><kbd>/</kbd></button>
+    </header>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#today" data-view="today">Today<span class="badge" id="badge-today"></span></a>
+      <a href="#problems" data-view="problems">Problems</a>
+      <a href="#bugs" data-view="bugs">Bugs<span class="badge" id="badge-bugs"></span></a>
+      <a href="#progress" data-view="progress">Progress</a>
+      <a href="#more" data-view="more">More</a>
+    </nav>
+    <main id="main" tabindex="-1"></main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "requack",
+  "version": "1.0.0",
+  "description": "Spaced repetition for LeetCode, with a rubber duck.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8080"
+  }
+}

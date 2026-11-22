@@ -1,0 +1,10 @@
+{
+  "name": "Requack",
+  "short_name": "Requack",
+  "description": "Spaced repetition for interview prep, with a rubber duck.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#15161a",
+  "theme_color": "#15161a",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
